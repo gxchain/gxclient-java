@@ -26,18 +26,18 @@ public class GxchainClientTest {
     int assetPrecicion = 5;
     GxchainClient client = new GxchainClient(privateKey, accountId, "ws://192.168.1.118:28090");
 
-  //  @Test
+    @Test
     public void generateKey() throws Exception {
         System.out.println(JSON.toJSONString(GxchainClient.generateKey()));
     }
 
-  //  @Test
+    @Test
     public void register() throws Exception {
         KeyPair keyPair = GxchainClient.generateKey();
         System.out.println(client.register("lirb-test001", keyPair.getPublicKey(), "", "", "http://47.96.164.78:8888"));
     }
 
-  //  @Test
+    @Test
     public void detectTransaction() throws Exception {
         client.latestIrreversibleBlockTask();
         client.detectTransaction(11042137, (blockHeight, txid, operation) -> {
@@ -60,7 +60,7 @@ public class GxchainClientTest {
         });
     }
 
-  //  @Test
+    @Test
     public void transfer() throws Exception {
         Transaction transaction = client.transfer("gxb456", null,
                 GxcAssetAmount.builder().amount(new BigDecimal(0.01)).assetId("1.3.1").precision(assetPrecicion).build(), true);
