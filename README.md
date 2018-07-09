@@ -1,6 +1,7 @@
 # gxclient
 A client to interact with gxchain implemented
-
+# Supported Versions
+java 8
 # Install
 
 ```
