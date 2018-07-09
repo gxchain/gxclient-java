@@ -61,12 +61,13 @@ client.register("lirb-test001", keyPair.getPublicKey()));
 ``` java
 String privateKey = "5K8iH1jMJxn8TKXXgHJHjkf8zGXsbVPvrCLvU2GekDh2nk4ZPSF";
 String accountId = "1.2.323";
+int assetPrecicion = 5;
 // set broadcast to false so we could calculate the fee before broadcasting
 boolean broadcast = true;
 GxchainClient client = new GxchainClient(privateKey, accountId);
 Transaction transaction = client.transfer("gxb456", "GXChain NB",
                 GxcAssetAmount.builder().amount(new BigDecimal(0.01)).assetId("1.3.1").precision(assetPrecicion).build(), broadcast);
-        log.info(transaction.toJsonString());
+     
 log.info(transaction.toJsonString());
         
 ```
