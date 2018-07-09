@@ -23,28 +23,28 @@ add to pom.xml
 ## 1. Transaction detect
 
 ``` java
-        String privateKey = "5K8iH1jMJxn8TKXXgHJHjkf8zGXsbVPvrCLvU2GekDh2nk4ZPSF";
-        String accountId = "1.2.323";
-        GxchainClient client = new GxchainClient(privateKey, accountId);
-        client.latestIrreversibleBlockTask();
-        client.detectTransaction(11042137, (blockHeight, txid, operation) -> {
-            //deal with transfer operation
-            if (operation.get(0).getAsInt() == 0) {
-                TransferOperation op = WsGsonUtil.fromJson(operation.get(1).toString(), TransferOperation.class);
-                if (op.getTo().getObjectId().equalsIgnoreCase(accountId)) {
-                    Memo memo = op.getMemo();
-                    if (memo != null) {
-                        String decryptedMsg = MsgCryptUtil.decrypt(memoPrivate, memo.getSource().toString(), memo.getNonce().longValue(), memo.getByteMessage());
-                        log.info("decryptedMsg:{}", decryptedMsg);
-                    } else {
-                        log.info("no memo,txid:{}", txid);
-                    }
-                }
-                if (op.getFrom().getObjectId().equalsIgnoreCase(accountId)) {
-                    log.info("{} should be confirmed", txid);
-                }
+String privateKey = "5K8iH1jMJxn8TKXXgHJHjkf8zGXsbVPvrCLvU2GekDh2nk4ZPSF";
+String accountId = "1.2.323";
+GxchainClient client = new GxchainClient(privateKey, accountId);
+client.latestIrreversibleBlockTask();
+client.detectTransaction(11042137, (blockHeight, txid, operation) -> {
+    //deal with transfer operation
+    if (operation.get(0).getAsInt() == 0) {
+        TransferOperation op = WsGsonUtil.fromJson(operation.get(1).toString(), TransferOperation.class);
+        if (op.getTo().getObjectId().equalsIgnoreCase(accountId)) {
+            Memo memo = op.getMemo();
+            if (memo != null) {
+                String decryptedMsg = MsgCryptUtil.decrypt(memoPrivate, memo.getSource().toString(), memo.getNonce().longValue(), memo.getByteMessage());
+                 log.info("decryptedMsg:{}", decryptedMsg);
+            } else {
+                 log.info("no memo,txid:{}", txid);
             }
-        });
+        }
+        if (op.getFrom().getObjectId().equalsIgnoreCase(accountId)) {
+            log.info("{} should be confirmed", txid);
+        }
+    }
+});
 ```
 
 ## 2. KeyPair generation
@@ -55,7 +55,7 @@ KeyPair keyPair = GxchainClient.generateKey();
 ``` java
 GxchainClient client = new GxchainClient();
 KeyPair keyPair = GxchainClient.generateKey();
-client.register("lirb-test001", keyPair.getPublicKey(), "", "", "http://47.96.164.78:8888"));
+client.register("lirb-test001", keyPair.getPublicKey()));
 ```
 ## 4. Transfer
 ``` java

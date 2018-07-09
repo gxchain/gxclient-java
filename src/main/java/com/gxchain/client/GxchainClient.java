@@ -80,7 +80,8 @@ public class GxchainClient {
 
     OkHttpClient httpClient = new OkHttpClient();
 
-    public GxchainClient(){}
+    public GxchainClient() {
+    }
 
     public GxchainClient(String activePrivateKey, String accountId) {
         this(activePrivateKey, accountId, "wss://node1.gxb.io", activePrivateKey);
@@ -123,6 +124,16 @@ public class GxchainClient {
         PrivateKey privateKey = KeyUtil.getBrainPrivateKey(brainKey, 0);
         PublicKey publicKey = KeyUtil.getPublicKey(privateKey);
         return KeyPair.builder().brainKey(brainKey).privateKey(privateKey.toWif()).publicKey(publicKey.getAddress()).build();
+    }
+
+    /**
+     * register gxchain account
+     * @param accountName
+     * @param activePrivateKey
+     * @return
+     */
+    public String register(String accountName, String activePrivateKey) {
+        return register(accountName, activePrivateKey, "", "", "");
     }
 
     /**
