@@ -23,6 +23,7 @@ import com.gxchain.common.ws.client.graphenej.models.DynamicGlobalProperties;
 import com.gxchain.common.ws.client.graphenej.models.WitnessResponse;
 import com.gxchain.common.ws.client.graphenej.objects.*;
 import com.gxchain.common.ws.client.graphenej.operations.BaseOperation;
+import com.gxchain.common.ws.client.graphenej.operations.BroadcastOperation;
 import com.gxchain.common.ws.client.graphenej.operations.TransferOperation;
 import com.gxchain.common.ws.client.graphenej.operations.TransferOperationBuilder;
 import lombok.extern.slf4j.Slf4j;
@@ -128,6 +129,7 @@ public class GxchainClient {
 
     /**
      * register gxchain account
+     *
      * @param accountName
      * @param activePrivateKey
      * @return
@@ -341,5 +343,26 @@ public class GxchainClient {
         if (response.error != null) {
             throw new GxchainApiException(response.error);
         }
+    }
+
+    /**
+     * proxy transfer
+     * @param proxyMemo
+     * @param feeAssetId
+     * @param requestParams
+     * @param isBroadcast
+     * @return
+     */
+    public Transaction proxyTransfer(String proxyMemo, String feeAssetId, BroadcastRequestParams requestParams, boolean isBroadcast) {
+        BroadcastOperation broadcastOperation = new BroadcastOperation();
+        broadcastOperation.setRequestParams(requestParams);
+        broadcastOperation.setExtensions(new Extensions());
+        broadcastOperation.setProxyMemo(proxyMemo);
+        broadcastOperation.setFee(new AssetAmount(0L, feeAssetId));
+        ArrayList<BaseOperation> operations = new ArrayList<>();
+        operations.add(broadcastOperation);
+        Transaction transaction = new Transaction(this.activePrivateKey, null, operations);
+        processTransaction(transaction, feeAssetId, isBroadcast);
+        return transaction;
     }
 }
