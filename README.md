@@ -15,7 +15,7 @@ add to pom.xml
  <dependency>
     <groupId>com.gxchain.common</groupId>
     <artifactId>gxchain-client</artifactId>
-    <version>1.0.3-SNAPSHOT</version>
+    <version>1.0.3-RELEASE</version>
  </dependency>
 ```
 
