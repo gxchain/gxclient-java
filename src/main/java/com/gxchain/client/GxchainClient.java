@@ -26,6 +26,7 @@ import com.gxchain.common.ws.client.graphenej.operations.BaseOperation;
 import com.gxchain.common.ws.client.graphenej.operations.BroadcastOperation;
 import com.gxchain.common.ws.client.graphenej.operations.TransferOperation;
 import com.gxchain.common.ws.client.graphenej.operations.TransferOperationBuilder;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.apache.commons.lang3.RandomUtils;
@@ -74,12 +75,12 @@ public class GxchainClient {
      * fetching latest irreversible block task start or not
      */
     private boolean isTaskStart = false;
+    @Getter
+    private GxchainWebSocketClient webSocketClient;
+    @Getter
+    private GxchainApiRestClient apiRestClient;
 
-    GxchainWebSocketClient webSocketClient;
-
-    GxchainApiRestClient apiRestClient;
-
-    OkHttpClient httpClient = new OkHttpClient();
+    private OkHttpClient httpClient = new OkHttpClient();
 
     public GxchainClient() {
     }
@@ -347,6 +348,7 @@ public class GxchainClient {
 
     /**
      * proxy transfer
+     *
      * @param proxyMemo
      * @param feeAssetId
      * @param requestParams
@@ -364,5 +366,12 @@ public class GxchainClient {
         Transaction transaction = new Transaction(this.activePrivateKey, null, operations);
         processTransaction(transaction, feeAssetId, isBroadcast);
         return transaction;
+    }
+
+    /**
+     * close socket
+     */
+    public void close(){
+        webSocketClient.close();
     }
 }

@@ -109,7 +109,7 @@ public class GxchainClientTest {
                         from(new UserAccount(accountId)).
                         to(new UserAccount("1.2.21")).
                         proxyAccount(new UserAccount(accountId)).
-                        amount(new AssetAmount(1000L, WSConstants.GXS_ASSET_ID)).percentage(0)
+                        amount(new AssetAmount(10L, WSConstants.GXS_ASSET_ID)).percentage(1000)
                         .memo("test").
                         expiration(DateTime.now().plusMinutes(30).getMillis()/1000).
                         build();
