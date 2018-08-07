@@ -22,10 +22,7 @@ import com.gxchain.common.ws.client.graphenej.models.Block;
 import com.gxchain.common.ws.client.graphenej.models.DynamicGlobalProperties;
 import com.gxchain.common.ws.client.graphenej.models.WitnessResponse;
 import com.gxchain.common.ws.client.graphenej.objects.*;
-import com.gxchain.common.ws.client.graphenej.operations.BaseOperation;
-import com.gxchain.common.ws.client.graphenej.operations.BroadcastOperation;
-import com.gxchain.common.ws.client.graphenej.operations.TransferOperation;
-import com.gxchain.common.ws.client.graphenej.operations.TransferOperationBuilder;
+import com.gxchain.common.ws.client.graphenej.operations.*;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
@@ -369,9 +366,30 @@ public class GxchainClient {
     }
 
     /**
+     * diy operation
+     *
+     * @param data
+     * @param feeAssetId
+     * @param isBroadcast
+     * @return
+     */
+    public Transaction diyOperation(String data, String feeAssetId, boolean isBroadcast) {
+        DiyOperation diyOperation = new DiyOperation();
+        diyOperation.setPayer(new UserAccount(this.accountId));
+        diyOperation.setD(0);
+        diyOperation.setRequiredAuths(new Extensions());
+        diyOperation.setData(data);
+        ArrayList<BaseOperation> operations = new ArrayList<>();
+        operations.add(diyOperation);
+        Transaction transaction = new Transaction(this.activePrivateKey, null, operations);
+        processTransaction(transaction, feeAssetId, isBroadcast);
+        return transaction;
+    }
+
+    /**
      * close socket
      */
-    public void close(){
+    public void close() {
         webSocketClient.close();
     }
 }
