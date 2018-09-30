@@ -37,6 +37,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -369,9 +370,34 @@ public class GxchainClient {
     }
 
     /**
+     * proxy transfer
+     * @param proxyMemos
+     * @param feeAssetId
+     * @param requestParams
+     * @param isBroadcast
+     * @return
+     */
+    public Transaction proxyTransfer(List<String> proxyMemos, String feeAssetId, List<BroadcastRequestParams> requestParams, boolean isBroadcast) {
+        ArrayList<BaseOperation> operations = new ArrayList<>();
+        int i = 0;
+        for (BroadcastRequestParams broadcastRequestParams : requestParams) {
+            BroadcastOperation broadcastOperation = new BroadcastOperation();
+            broadcastOperation.setRequestParams(broadcastRequestParams);
+            broadcastOperation.setExtensions(new Extensions());
+            broadcastOperation.setProxyMemo(proxyMemos.get(i++));
+            broadcastOperation.setFee(new AssetAmount(0L, feeAssetId));
+            operations.add(broadcastOperation);
+        }
+
+        Transaction transaction = new Transaction(this.activePrivateKey, null, operations);
+        processTransaction(transaction, feeAssetId, isBroadcast);
+        return transaction;
+    }
+
+    /**
      * close socket
      */
-    public void close(){
+    public void close() {
         webSocketClient.close();
     }
 }
