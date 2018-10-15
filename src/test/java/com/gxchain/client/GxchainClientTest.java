@@ -119,4 +119,10 @@ public class GxchainClientTest {
         Transaction transaction = client.proxyTransfer("proxy test",WSConstants.GXS_ASSET_ID,requestParams,false);
         log.info(transaction.toJsonString());
     }
+
+    @Test
+    public void diyOperation(){
+        String data = "Hello GXChain!";
+        log.info(client.diyOperation(data,WSConstants.GXS_ASSET_ID,true).toJsonString());
+    }
 }

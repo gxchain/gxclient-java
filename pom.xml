@@ -49,19 +49,26 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skipTests>true</skipTests>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
     <distributionManagement>
         <repository>
             <id>nexus-releases</id>
-            <url>http://192.168.1.122:8081/repository/maven-releases/</url>
-            <!--<url>https://repo.gxchain.cn/repository/maven-releases/</url>-->
+            <!--<url>http://192.168.1.122:8081/repository/maven-releases/</url>-->
+            <url>https://repo.gxchain.cn/repository/maven-releases/</url>
         </repository>
         <snapshotRepository>
             <id>nexus-snapshots</id>
-            <url>http://192.168.1.122:8081/repository/maven-snapshots/</url>
-            <!--<url>https://repo.gxchain.cn/repository/maven-snapshots/</url>-->
+            <!--<url>http://192.168.1.122:8081/repository/maven-snapshots/</url>-->
+            <url>https://repo.gxchain.cn/repository/maven-snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
 </project>
