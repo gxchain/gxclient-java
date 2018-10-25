@@ -8,18 +8,18 @@
 
     <groupId>com.gxchain.common</groupId>
     <artifactId>gxchain-client</artifactId>
-    <version>1.0.4-SNAPSHOT</version>
+    <version>1.0.6-RELEASE</version>
 
     <dependencies>
         <dependency>
             <groupId>com.gxchain.common</groupId>
             <artifactId>ws-client</artifactId>
-            <version>1.0.6-SNAPSHOT</version>
+            <version>1.0.6-RELEASE</version>
         </dependency>
         <dependency>
             <groupId>com.gxchain.common</groupId>
             <artifactId>common-signature</artifactId>
-            <version>1.0.2-RELEASE</version>
+            <version>1.0.4-RELEASE</version>
         </dependency>
     </dependencies>
 
@@ -67,8 +67,8 @@
         </repository>
         <snapshotRepository>
             <id>nexus-snapshots</id>
-            <!--<url>http://192.168.1.122:8081/repository/maven-snapshots/</url>-->
-            <url>https://repo.gxchain.cn/repository/maven-snapshots/</url>
+            <url>http://192.168.1.122:8081/repository/maven-snapshots/</url>
+            <!--<url>https://repo.gxchain.cn/repository/maven-snapshots/</url>-->
         </snapshotRepository>
     </distributionManagement>
 </project>
