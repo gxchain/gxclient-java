@@ -5,18 +5,19 @@ java 8
 # Install
 
 ```
-add to settings.xml
- <mirror>
-    <id>gxchain</id>
-    <mirrorOf>*</mirrorOf>
-    <url>http://repo.gxchain.cn/repository/maven-public/</url>
- </mirror>
-add to pom.xml
+ add to pom.xml
  <dependency>
     <groupId>com.gxchain.common</groupId>
     <artifactId>gxchain-client</artifactId>
-    <version>1.0.3-RELEASE</version>
+    <version>1.0.6-RELEASE</version>
  </dependency>
+ add a repository to pom.xml
+ <repositories>
+     <repository>
+         <id>gxchain</id>
+         <url>http://repo.gxchain.cn/repository/maven-public/</url>
+     </repository>
+ </repositories>
 ```
 
 # Usage
