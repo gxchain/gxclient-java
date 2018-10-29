@@ -368,6 +368,7 @@ public class GxchainClient {
 
     /**
      * proxy transfer
+     *
      * @param proxyMemos
      * @param feeAssetId
      * @param requestParams
@@ -410,6 +411,19 @@ public class GxchainClient {
         Transaction transaction = new Transaction(this.activePrivateKey, null, operations);
         processTransaction(transaction, feeAssetId, isBroadcast);
         return transaction;
+    }
+
+    /**
+     * get block objects
+     * 1.2.* account
+     * 1.3.* asset
+     * 2.1.0 the newest block
+     *
+     * @param objectIds
+     * @return
+     */
+    public JsonElement getObjects(List<String> objectIds) {
+        return this.getApiRestClient().getObjects(objectIds);
     }
 
     /**

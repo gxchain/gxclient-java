@@ -1,6 +1,7 @@
 package com.gxchain.client;
 
 import com.alibaba.fastjson.JSON;
+import com.google.gson.JsonElement;
 import com.gxchain.client.domian.GxcAssetAmount;
 import com.gxchain.client.domian.KeyPair;
 import com.gxchain.common.signature.MsgCryptUtil;
@@ -124,5 +125,11 @@ public class GxchainClientTest {
     public void diyOperation(){
         String data = "Hello GXChain!";
         log.info(client.diyOperation(data,WSConstants.GXS_ASSET_ID,true).toJsonString());
+    }
+
+    @Test
+    public void getObjects(){
+        JsonElement result = client.getObjects(Arrays.asList("1.2.1","2.1.0","1.3.1"));
+        log.info(result.toString());
     }
 }
