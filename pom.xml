@@ -8,7 +8,7 @@
 
     <groupId>com.gxchain.common</groupId>
     <artifactId>gxchain-client</artifactId>
-    <version>1.0.7-RELEASE</version>
+    <version>1.0.8-RELEASE</version>
 
     <dependencies>
         <dependency>
@@ -19,7 +19,7 @@
         <dependency>
             <groupId>com.gxchain.common</groupId>
             <artifactId>common-signature</artifactId>
-            <version>1.0.4-RELEASE</version>
+            <version>1.0.5-RELEASE</version>
         </dependency>
     </dependencies>
 
@@ -62,8 +62,8 @@
     <distributionManagement>
         <repository>
             <id>nexus-releases</id>
-            <url>http://192.168.1.122:8081/repository/maven-releases/</url>
-            <!--<url>https://repo.gxchain.cn/repository/maven-releases/</url>-->
+            <!--<url>http://192.168.1.122:8081/repository/maven-releases/</url>-->
+            <url>https://repo.gxchain.cn/repository/maven-releases/</url>
         </repository>
         <snapshotRepository>
             <id>nexus-snapshots</id>
