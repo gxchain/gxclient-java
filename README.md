@@ -1,5 +1,8 @@
 # gxclient
 A client to interact with gxchain implemented
+
+<img width="400px" src='https://raw.githubusercontent.com/gxchain/gxips/master/assets/images/task-gxclient.png'/>
+
 # Supported Versions
 java 8
 # Install
