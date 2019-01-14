@@ -1,7 +1,13 @@
 # gxclient
 A client to interact with gxchain implemented
-
-<img width="400px" src='https://raw.githubusercontent.com/gxchain/gxips/master/assets/images/task-gxclient.png'/>
+<p>
+ <a href='javascript:;'>
+   <img width="300px" src='https://raw.githubusercontent.com/gxchain/gxips/master/assets/images/task-gxclient.png'/>
+ </a>
+ <a href='javascript:;'>
+   <img width="300px" src='https://raw.githubusercontent.com/gxchain/gxips/master/assets/images/task-gxclient-en.png'/>
+ </a>
+</p> 
 
 # Supported Versions
 java 8
