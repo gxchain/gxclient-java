@@ -9,7 +9,7 @@ java 8
  <dependency>
     <groupId>com.gxchain.common</groupId>
     <artifactId>gxchain-client</artifactId>
-    <version>1.0.9-RELEASE</version>
+    <version>2.0.0-RELEASE</version>
  </dependency>
  add a repository to pom.xml
  <repositories>
@@ -19,53 +19,95 @@ java 8
      </repository>
  </repositories>
 ```
+# APIs
+- [x] [Keypair API](#keypair-api)
+- [x] [Chain API](#chain-api)
+- [x] [Faucet API](#faucet-api)
+- [x] [Account API](#account-api)
+- [x] [Asset API](#asset-api)
+- [x] [Contract API](#contract-api)
+
+
+## Constructors
+
+``` java
+//init GxchainClient
+public GxchainClient(String activePrivateKey, String accountIdOrName, String entryPoint, String memoPrivateKey);
+```
+
+## Keypair API
+
+``` java
+//generate key pair locally
+public static KeyPair generateKey(String brainKey) throws IOException;
+//export public key from private key
+public static String privateToPublic(String privateKey);
+//check if public key is valid
+public static boolean isValidPublic(String publicKey);
+//check if private key is valid
+public static boolean isValidPrivate(String privateKey);
+
+```
+
+## Chain API
+
+``` java
+//get current blockchain id
+public String getChainID();
+//get dynamic global properties 
+public DynamicGlobalProperties getDynamicGlobalProperties();
+//get block object
+public JsonElement getObject(String objectId);
+//get block objects
+public JsonElement getObjects(List<String> objectIds);
+// get block by block height
+public Block getBlock(long blockHeight);
+//send transfer request to entryPoint node
+public TransactionResult transfer(String toAccountName, String memo, String assetAmount, String feeAsset, boolean isBroadcast);
+//vote for accounts
+public TransactionResult vote(List<String> accountNames, String feePayingAsset, boolean isBroadcast);
+```
+
+## Faucet API
+
+``` java
+//register gxchain account
+public String register(String accountName, String activePrivateKey, String ownerKey, String memoKey, String faucet);
+
+```
+## Account API
+
+``` java
+// get account info by account name
+public AccountProperties getAccount(String accountName);
+//get account_ids by public key
+public List<String> getAccountByPublicKey(String publicKey);
+//get account balances by account name
+public List<AssetAmount> getAccountBalances(String accountName);
+```
+
+## Asset API
+
+``` java
+//get asset info by symbol
+public Asset getAsset(String symbol);
+
+```
+
+## Contract API
+
+``` java
+//get contract abi by contract_name
+public Abi getContractABI(String contractName);
+//get contract table by contract_name
+public List<Table> getContractTable(String contractName);
+// call smart contract method
+public TransactionResult callContract(String contractName, String methodName, JsonElement param, String assetAmount, boolean isBroadcast);
+```
 
 # Usage
 
-## 1. Transaction detect
-
-``` java
-String privateKey = "5K8iH1jMJxn8TKXXgHJHjkf8zGXsbVPvrCLvU2GekDh2nk4ZPSF";
-String accountId = "1.2.323";
-GxchainClient client = new GxchainClient(privateKey, accountId);
-client.latestIrreversibleBlockTask();
-
-// start to detect new transactions related to my account from the indicated block
-client.detectTransaction(11042137, (blockHeight, txid, operation) -> {
-    //deal with transfer operation
-    if (operation.get(0).getAsInt() == 0) {
-        TransferOperation op = WsGsonUtil.fromJson(operation.get(1).toString(), TransferOperation.class);
-        log.info("{},{},{}",blockHeight,txid,op.toJsonString());
-        /**
-         * eg.
-         * 8973904,fa7d92765dc845e90fd686eb90de4f888f742127,
-         * [ 0,{"fee": {"amount": 1000,"asset_id": "1.3.1"},
-         *      "from": "1.2.323",
-         *      "to": "1.2.21",
-         *      "amount": {"amount": 1000,"asset_id": "1.3.1"},
-         *      "extensions": []
-         * }]
-         */                
-        if (op.getTo().getObjectId().equalsIgnoreCase(accountId)) {
-            Memo memo = op.getMemo();
-            // decrypt memo if assigned
-            if (memo != null) {
-                String decryptedMsg = MsgCryptUtil.decrypt(memoPrivate, memo.getSource().toString(), memo.getNonce().longValue(), memo.getByteMessage());
-                 log.info("decryptedMsg:{}", decryptedMsg);
-                 // TODO: Persistent blockHeight, txid and operation to the database,
-                 // it's recommended to use blockHeight and txid as the primary key
-            } else {
-                 log.info("no memo,txid:{}", txid);
-            }
-        }
-        if (op.getFrom().getObjectId().equalsIgnoreCase(accountId)) {
-            log.info("{} should be confirmed", txid);
-        }
-    }
-});
-```
-
-## 2. KeyPair generation
+## 1. KeyPair generation
 ``` java
 KeyPair keyPair = GxchainClient.generateKey();
 ```
@@ -77,7 +119,7 @@ eg.
   "publicKey": "GXC5bgYX7xNDt1YG7DjD178nK6x9phHAHjZJA7Ug3dkeefLsATiCQ"
 }
 ```
-## 3. Account register
+## 2. Account register
 ``` java
 GxchainClient client = new GxchainClient();
 KeyPair keyPair = GxchainClient.generateKey();
@@ -85,7 +127,7 @@ String result = client.register("lirb-test001", keyPair.getPublicKey()));
 log.info(result);
 //{"ref_block_num":18490,"ref_block_prefix":827801284,"expiration":"2018-07-10T08:18:18","operations":[[5,{"fee":{"amount":114746,"asset_id":"1.3.0"},"registrar":"1.2.6","referrer":"1.2.6","referrer_percent":0,"name":"lirb-test002","owner":{"weight_threshold":1,"account_auths":[],"key_auths":[["GXC84N2ckGU7UwzqZUYxGS1Bm47o4poofUKno2RJ15xU2ZDwwrSsB",1]],"address_auths":[]},"active":{"weight_threshold":1,"account_auths":[],"key_auths":[["GXC84N2ckGU7UwzqZUYxGS1Bm47o4poofUKno2RJ15xU2ZDwwrSsB",1]],"address_auths":[]},"options":{"memo_key":"GXC84N2ckGU7UwzqZUYxGS1Bm47o4poofUKno2RJ15xU2ZDwwrSsB","voting_account":"1.2.5","num_witness":0,"num_committee":0,"votes":[],"extensions":[]},"extensions":{}}]],"extensions":[],"signatures":["1f3a0c4cbeda10d5387296b1d6ecff8e2e47250427daad4efd30c2ff975ff43ce311d667f4e833c218f97dfc591b5370a0ca13d20e50a1cca84cb00d9cc2bdf1c3"]}
 ```
-## 4. Transfer
+## 3. Transfer
 ``` java
 String privateKey = "5K8iH1jMJxn8TKXXgHJHjkf8zGXsbVPvrCLvU2GekDh2nk4ZPSF";
 String accountId = "1.2.323";
