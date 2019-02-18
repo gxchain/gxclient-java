@@ -7,6 +7,7 @@ import com.gxchain.client.graphenej.PublicKey;
 import com.gxchain.client.graphenej.Util;
 import com.gxchain.client.graphenej.errors.MalformedAddressException;
 import com.gxchain.client.graphenej.interfaces.GrapheneSerializable;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -158,6 +159,19 @@ public class AccountOptions implements GrapheneSerializable {
             try {
                 Address address = new Address(baseObject.get(KEY_MEMO_KEY).getAsString());
                 options = new AccountOptions(address.getPublicKey());
+                options.setNumWitness(baseObject.get(KEY_NUM_WITNESS).getAsInt());
+                options.setNumComittee(baseObject.get(KEY_NUM_COMMITTEE).getAsInt());
+                if (StringUtils.isNotBlank(baseObject.get(KEY_VOTING_ACCOUNT).getAsString())) {
+                    options.setVotingAccount(new UserAccount(baseObject.get(KEY_VOTING_ACCOUNT).getAsString()));
+                }
+                JsonArray votes = baseObject.get(KEY_VOTES).getAsJsonArray();
+                if (votes.size() > 0) {
+                    List<Vote> voteList = new ArrayList<>();
+                    for (JsonElement vote : votes) {
+                        voteList.add(new Vote(vote.getAsString()));
+                    }
+                    options.setVotes(voteList.toArray(new Vote[0]));
+                }
             } catch (MalformedAddressException e) {
                 LOGGER.info("MalformedAddressException. Msg: " + e.getMessage());
                 options = new AccountOptions();

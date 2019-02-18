@@ -155,7 +155,7 @@ public class GXChainClientTest {
 
     @Test
     public void vote() {
-        TransactionResult transactionResult = client.vote(Arrays.asList("zhuliting", "bob"), "GXC", true);
+        TransactionResult transactionResult = client.vote(Arrays.asList("zhuliting"), "GXC", true);
         log.info(transactionResult.getTransaction().toJsonString());
     }
 

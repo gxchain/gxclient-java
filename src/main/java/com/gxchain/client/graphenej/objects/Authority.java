@@ -111,7 +111,7 @@ public class Authority implements GrapheneSerializable {
 
     @Override
     public String toJsonString() {
-        return null;
+        return toJsonObject().toString();
     }
 
     @Override

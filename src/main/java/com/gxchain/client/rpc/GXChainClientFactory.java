@@ -20,7 +20,7 @@ public class GXChainClientFactory {
      * @param url
      * @return
      */
-    public GXChainApiRestClient newRestCLient(String url) {
+    public GXChainApiRestClient newRestClient(String url) {
         return new GXChainApiRestClientImpl(url);
     }
 }

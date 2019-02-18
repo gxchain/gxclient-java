@@ -150,6 +150,7 @@ public class Transaction implements ByteSerializable, JsonSerializable {
      * @return: A valid signature of the current transaction.
      */
     public byte[] getGrapheneSignature() {
+        log.debug("start sign");
         boolean isGrapheneCanonical = false;
         byte[] sigData = null;
 
@@ -184,6 +185,7 @@ public class Transaction implements ByteSerializable, JsonSerializable {
         }
         //        String s = Util.byteToString(Sha256Hash.hash(this.toBytes()));
         //        String sign = SignatureUtil.signature(s,WSConstants.WS_ACCOUNT_PRIKEY);
+        log.debug("sign finished");
         return sigData;
     }
 

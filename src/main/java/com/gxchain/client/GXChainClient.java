@@ -111,7 +111,7 @@ public class GXChainClient {
         this.activePrivateKey = activePrivateKey;
         this.entryPoint = entryPoint;
         this.memoPrivateKey = memoPrivateKey;
-        this.apiRestClient = GXChainClientFactory.getInstance().newRestCLient(this.entryPoint.replace("wss://", "https://").replace("ws://", "http://"));
+        this.apiRestClient = GXChainClientFactory.getInstance().newRestClient(this.entryPoint.replace("wss://", "https://").replace("ws://", "http://"));
         if (Pattern.matches("^1\\.2\\.\\d+$", accountIdOrName)) {
             this.accountId = accountIdOrName;
         } else {
@@ -120,6 +120,12 @@ public class GXChainClient {
                 throw new GXChainApiException("Account " + accountIdOrName + " not exist");
             }
             this.accountId = accountProperties.getId();
+        }
+        try {
+            //提前加载script引擎
+            Class.forName("com.gxchain.client.util.TxSerializerUtil");
+        } catch (ClassNotFoundException e) {
+            log.error(e.getMessage(), e);
         }
     }
 
@@ -273,6 +279,7 @@ public class GXChainClient {
 
     /**
      * query from gxchain
+     *
      * @param method method name
      * @param params method params
      * @return
@@ -506,6 +513,9 @@ public class GXChainClient {
         AccountProperties account = apiRestClient.getAccounts(Arrays.asList(this.accountId)).get(0);
         if (account == null) {
             throw new GXChainApiException("account_id [" + this.accountId + "] not exist");
+        }
+        if (StringUtils.isBlank(feePayingAsset)) {
+            feePayingAsset = "GXC";
         }
         //获取资产
         Asset feeAsset = getAsset(feePayingAsset);
