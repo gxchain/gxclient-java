@@ -7,8 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
-import java.io.File;
-import java.io.FileReader;
+import java.io.*;
 
 /**
  * @author liruobin
@@ -20,12 +19,17 @@ public class TxSerializerUtil {
 
     static {
         log.info("init script engine");
-        String jspath = TxSerializerUtil.class.getResource(File.separator) + "js" + File.separator + "tx_serializer.min.js";
-        jspath = jspath.replaceAll("^file:", "");
         ScriptEngineManager manager = new ScriptEngineManager();
         engine = manager.getEngineByName("nashorn");
         try {
-            engine.eval(new FileReader(jspath));
+            InputStream inputStream = TxSerializerUtil.class.getClassLoader().getResourceAsStream( "js" + File.separator + "tx_serializer.min.js");
+            StringBuilder script = new StringBuilder();
+            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+            String line="";
+            while((line = br.readLine())!=null){
+                script.append(line);
+            }
+            engine.eval(script.toString());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
