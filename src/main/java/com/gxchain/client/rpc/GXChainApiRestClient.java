@@ -20,7 +20,7 @@ import java.util.List;
  * @author liruobin
  * @since 2018/7/5 上午10:39
  */
-public interface GxchainApiRestClient {
+public interface GXChainApiRestClient {
 
     //////////////////////
     /// chain api
@@ -30,9 +30,9 @@ public interface GxchainApiRestClient {
      *
      * @param method 方法名
      * @param params 参数
-     * @return json string
+     * @return JsonElement
      */
-    String query(String method, JsonArray params);
+    JsonElement query(String method, JsonArray params);
 
     /**
      * 查询gxchain chainId

@@ -5,7 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import com.gxchain.client.domian.params.GetTableRowsParams;
-import com.gxchain.client.exception.GxchainApiException;
+import com.gxchain.client.exception.GXChainApiException;
 import com.gxchain.client.graphenej.RPC;
 import com.gxchain.client.graphenej.models.*;
 import com.gxchain.client.graphenej.models.contract.Abi;
@@ -14,9 +14,9 @@ import com.gxchain.client.graphenej.models.contract.Table;
 import com.gxchain.client.graphenej.objects.Asset;
 import com.gxchain.client.graphenej.objects.AssetAmount;
 import com.gxchain.client.graphenej.operations.BaseOperation;
-import com.gxchain.client.rpc.GxchainApiRestClient;
+import com.gxchain.client.rpc.GXChainApiRestClient;
 import com.gxchain.client.rpc.api.GxbApiFactory;
-import com.gxchain.client.rpc.api.GxchainApiService;
+import com.gxchain.client.rpc.api.GXChainApiService;
 import com.gxchain.client.util.GXGsonUtil;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -29,32 +29,32 @@ import java.util.stream.Collectors;
  * @author liruobin
  * @since 2018/7/5 上午10:39
  */
-public class GxchainApiRestClientImpl implements GxchainApiRestClient {
+public class GXChainApiRestClientImpl implements GXChainApiRestClient {
 
-    private GxchainApiService apiService;
+    private GXChainApiService apiService;
 
     private String chainId = "";
 
     private Integer sequenceId = 0;
 
-    public GxchainApiRestClientImpl(String url) {
-        apiService = GxbApiFactory.builder().baseUrl(url).build().newApi(GxchainApiService.class);
+    public GXChainApiRestClientImpl(String url) {
+        apiService = GxbApiFactory.builder().baseUrl(url).build().newApi(GXChainApiService.class);
     }
 
-    private String execute(ApiCall apiCall) {
+    private JsonElement execute(ApiCall apiCall) {
         try {
             WitnessResponse<JsonElement> response = apiService.call(apiCall).execute().body();
             if (response.error != null) {
-                throw new GxchainApiException(response.error);
+                throw new GXChainApiException(response.error);
             }
-            return GXGsonUtil.toJson(response.getResult());
+            return response.getResult();
         } catch (IOException e) {
-            throw new GxchainApiException(e);
+            throw new GXChainApiException(e);
         }
     }
 
     @Override
-    public String query(String method, JsonArray params) {
+    public JsonElement query(String method, JsonArray params) {
         ApiCall apiCall = new ApiCall(method, params, RPC.VERSION, sequenceId++);
         return execute(apiCall);
     }
@@ -66,7 +66,7 @@ public class GxchainApiRestClientImpl implements GxchainApiRestClient {
         }
         JsonArray emptyParams = new JsonArray();
         ApiCall apiCall = new ApiCall(0, RPC.CALL_GET_CHAIN_ID, emptyParams, RPC.VERSION, sequenceId++);
-        chainId = execute(apiCall).replace("\"", "");
+        chainId = execute(apiCall).toString().replace("\"", "");
         return chainId;
     }
 
@@ -74,7 +74,7 @@ public class GxchainApiRestClientImpl implements GxchainApiRestClient {
     public DynamicGlobalProperties getDynamicGlobalProperties() {
         JsonArray emptyParams = new JsonArray();
         ApiCall apiCall = new ApiCall(0, RPC.CALL_GET_DYNAMIC_GLOBAL_PROPERTIES, emptyParams, RPC.VERSION, sequenceId++);
-        return (DynamicGlobalProperties) GXGsonUtil.fromJson(execute(apiCall), DynamicGlobalProperties.class);
+        return GXGsonUtil.mapJson(execute(apiCall), DynamicGlobalProperties.class);
     }
 
     @Override
@@ -82,7 +82,7 @@ public class GxchainApiRestClientImpl implements GxchainApiRestClient {
         JsonArray accountParams = new JsonArray();
         accountParams.add(blockHeight);
         ApiCall apiCall = new ApiCall(0, RPC.CALL_GET_BLOCK, accountParams, RPC.VERSION, sequenceId++);
-        return GXGsonUtil.fromJson(execute(apiCall), Block.class);
+        return GXGsonUtil.mapJson(execute(apiCall), Block.class);
     }
 
     @Override
@@ -98,7 +98,7 @@ public class GxchainApiRestClientImpl implements GxchainApiRestClient {
         params.add(params2);
 
         ApiCall apiCall = new ApiCall(0, RPC.GET_OBJECTS, params, RPC.VERSION, sequenceId++);
-        return GXGsonUtil.fromJson(execute(apiCall), JsonElement.class);
+        return GXGsonUtil.mapJson(execute(apiCall), JsonElement.class);
     }
 
     @Override
@@ -111,7 +111,7 @@ public class GxchainApiRestClientImpl implements GxchainApiRestClient {
         accountParams.add(operationParams);
         accountParams.add(feeAsset.getObjectId());
         ApiCall apiCall = new ApiCall(0, RPC.CALL_GET_REQUIRED_FEES, accountParams, RPC.VERSION, sequenceId++);
-        return GXGsonUtil.fromJson(execute(apiCall), new TypeToken<List<AssetAmount>>() {
+        return GXGsonUtil.mapJson(execute(apiCall), new TypeToken<List<AssetAmount>>() {
         }.getType());
 
     }
@@ -123,7 +123,7 @@ public class GxchainApiRestClientImpl implements GxchainApiRestClient {
         params.add(accountId);
         params.add(assetList);
         ApiCall apiCall = new ApiCall(0, RPC.GET_ACCOUNT_BALANCES, params, RPC.VERSION, sequenceId++);
-        return GXGsonUtil.fromJson(execute(apiCall), new TypeToken<List<AssetAmount>>() {
+        return GXGsonUtil.mapJson(execute(apiCall), new TypeToken<List<AssetAmount>>() {
         }.getType());
     }
 
@@ -132,7 +132,7 @@ public class GxchainApiRestClientImpl implements GxchainApiRestClient {
         JsonArray accountParams = new JsonArray();
         accountParams.add(accountName);
         ApiCall apiCall = new ApiCall(0, RPC.CALL_GET_ACCOUNT_BY_NAME, accountParams, RPC.VERSION, sequenceId++);
-        return GXGsonUtil.fromJson(execute(apiCall), AccountProperties.class);
+        return GXGsonUtil.mapJson(execute(apiCall), AccountProperties.class);
     }
 
     @Override
@@ -140,7 +140,7 @@ public class GxchainApiRestClientImpl implements GxchainApiRestClient {
         JsonArray accountParams = new JsonArray();
         accountParams.add(accountName);
         ApiCall apiCall = new ApiCall(0, RPC.CALL_GET_ACCOUNT_BY_NAME, accountParams, RPC.VERSION, sequenceId++);
-        return GXGsonUtil.fromJson(execute(apiCall), ContractAccountProperties.class);
+        return GXGsonUtil.mapJson(execute(apiCall), ContractAccountProperties.class);
     }
 
     @Override
@@ -150,7 +150,7 @@ public class GxchainApiRestClientImpl implements GxchainApiRestClient {
         publicKeyParams.add(publicKey);
         params.add(publicKeyParams);
         ApiCall apiCall = new ApiCall(RPC.GET_KEY_REFERENCES, params, RPC.VERSION, sequenceId++);
-        List<List<String>> accountIds = GXGsonUtil.fromJson(execute(apiCall), new TypeToken<List<List<String>>>() {
+        List<List<String>> accountIds = GXGsonUtil.mapJson(execute(apiCall), new TypeToken<List<List<String>>>() {
         }.getType());
         if (CollectionUtils.isEmpty(accountIds)) {
             return null;
@@ -164,7 +164,7 @@ public class GxchainApiRestClientImpl implements GxchainApiRestClient {
         JsonArray accountIdList = GXGsonUtil.mapJson(accountIds, JsonArray.class);
         params.add(accountIdList);
         ApiCall apiCall = new ApiCall(0, RPC.CALL_GET_ACCOUNTS, params, RPC.VERSION, sequenceId++);
-        return GXGsonUtil.fromJson(execute(apiCall), new TypeToken<List<AccountProperties>>() {
+        return GXGsonUtil.mapJson(execute(apiCall), new TypeToken<List<AccountProperties>>() {
         }.getType());
     }
 
@@ -173,8 +173,7 @@ public class GxchainApiRestClientImpl implements GxchainApiRestClient {
         JsonArray params = new JsonArray();
         JsonArray symbolList = GXGsonUtil.mapJson(symbols, JsonArray.class);
         params.add(symbolList);
-        String result = query(RPC.LOOKUP_ASSET_SYMBOLS, params);
-        return GXGsonUtil.fromJson(result, new TypeToken<List<Asset>>() {
+        return GXGsonUtil.mapJson(query(RPC.LOOKUP_ASSET_SYMBOLS, params), new TypeToken<List<Asset>>() {
         }.getType());
     }
 
@@ -197,7 +196,7 @@ public class GxchainApiRestClientImpl implements GxchainApiRestClient {
         params.add(tableName);
         params.add(lowerBound);
         params.add(upperBound);
-        return GXGsonUtil.fromJson(query(RPC.GET_TABLE_ROWS, params), JsonElement.class);
+        return GXGsonUtil.mapJson(query(RPC.GET_TABLE_ROWS, params), JsonElement.class);
     }
 
     @Override
@@ -207,7 +206,7 @@ public class GxchainApiRestClientImpl implements GxchainApiRestClient {
         params.add(tableName);
         params.add(GXGsonUtil.mapJson(getTableRowsParams, JsonObject.class));
 
-        return GXGsonUtil.fromJson(query(RPC.GET_TABLE_ROWS, params), JsonElement.class);
+        return GXGsonUtil.mapJson(query(RPC.GET_TABLE_ROWS, params), JsonElement.class);
     }
 
     @Override
@@ -215,6 +214,6 @@ public class GxchainApiRestClientImpl implements GxchainApiRestClient {
         JsonArray params = new JsonArray();
         params.add(transaction);
         ApiCall apiCall = new ApiCall(2, RPC.BROADCAST_TRANSACTION_SYNCHRONOUS, params, RPC.VERSION, sequenceId++);
-        return GXGsonUtil.fromJson(execute(apiCall), JsonElement.class);
+        return GXGsonUtil.mapJson(execute(apiCall), JsonElement.class);
     }
 }

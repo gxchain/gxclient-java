@@ -50,4 +50,10 @@ public class GXGsonUtil {
     public static <T> T mapJson(Object src, Class<T> className) {
         return fromJson(toJson(src), className);
     }
+
+    public static <T> T mapJson(Object src, Type typeOfT) {
+        return fromJson(toJson(src), typeOfT);
+    }
+
+
 }

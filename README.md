@@ -31,8 +31,8 @@ java 8
 ## Constructors
 
 ``` java
-//init GxchainClient
-public GxchainClient(String activePrivateKey, String accountIdOrName, String entryPoint, String memoPrivateKey);
+//init GXChainClient
+public GXChainClient(String activePrivateKey, String accountIdOrName, String entryPoint, String memoPrivateKey);
 ```
 
 ## Keypair API
@@ -52,6 +52,8 @@ public static boolean isValidPrivate(String privateKey);
 ## Chain API
 
 ``` java
+//query from gxchain
+public JsonElement query(String method, JsonArray params)
 //get current blockchain id
 public String getChainID();
 //get dynamic global properties 
@@ -66,6 +68,8 @@ public Block getBlock(long blockHeight);
 public TransactionResult transfer(String toAccountName, String memo, String assetAmount, String feeAsset, boolean isBroadcast);
 //vote for accounts
 public TransactionResult vote(List<String> accountNames, String feePayingAsset, boolean isBroadcast);
+//broadcast transaction
+public JsonElement broadcast(Transaction transaction);
 ```
 
 ## Faucet API
@@ -91,7 +95,8 @@ public List<AssetAmount> getAccountBalances(String accountName);
 ``` java
 //get asset info by symbol
 public Asset getAsset(String symbol);
-
+//get assets info by symbols
+public List<Asset> getAssets(List<String> symbol)
 ```
 
 ## Contract API
@@ -103,6 +108,10 @@ public Abi getContractABI(String contractName);
 public List<Table> getContractTable(String contractName);
 // call smart contract method
 public TransactionResult callContract(String contractName, String methodName, JsonElement param, String assetAmount, boolean isBroadcast);
+//get contract table rows
+public JsonElement getTableRows(String contractName, String tableName, Number lowerBound, Number upperBound);
+//get contract table rows by extra params
+public JsonElement getTableRowsEx(String contractName, String tableName, GetTableRowsParams getTableRowsParams)
 ```
 
 # Usage
@@ -121,8 +130,8 @@ eg.
 ```
 ## 2. Account register
 ``` java
-GxchainClient client = new GxchainClient();
-KeyPair keyPair = GxchainClient.generateKey();
+GXChainClient client = new GXChainClient();
+KeyPair keyPair = GXChainClient.generateKey();
 String result = client.register("lirb-test001", keyPair.getPublicKey()));
 log.info(result);
 //{"ref_block_num":18490,"ref_block_prefix":827801284,"expiration":"2018-07-10T08:18:18","operations":[[5,{"fee":{"amount":114746,"asset_id":"1.3.0"},"registrar":"1.2.6","referrer":"1.2.6","referrer_percent":0,"name":"lirb-test002","owner":{"weight_threshold":1,"account_auths":[],"key_auths":[["GXC84N2ckGU7UwzqZUYxGS1Bm47o4poofUKno2RJ15xU2ZDwwrSsB",1]],"address_auths":[]},"active":{"weight_threshold":1,"account_auths":[],"key_auths":[["GXC84N2ckGU7UwzqZUYxGS1Bm47o4poofUKno2RJ15xU2ZDwwrSsB",1]],"address_auths":[]},"options":{"memo_key":"GXC84N2ckGU7UwzqZUYxGS1Bm47o4poofUKno2RJ15xU2ZDwwrSsB","voting_account":"1.2.5","num_witness":0,"num_committee":0,"votes":[],"extensions":[]},"extensions":{}}]],"extensions":[],"signatures":["1f3a0c4cbeda10d5387296b1d6ecff8e2e47250427daad4efd30c2ff975ff43ce311d667f4e833c218f97dfc591b5370a0ca13d20e50a1cca84cb00d9cc2bdf1c3"]}
@@ -134,13 +143,13 @@ String accountId = "1.2.323";
 int assetPrecicion = 5;
 // set broadcast to false so we could calculate the fee before broadcasting
 boolean broadcast = true;
-GxchainClient client = new GxchainClient(privateKey, accountId);
+GXChainClient client = new GxchainClient(privateKey, accountId);
 //Sending 0.01GXS to gxb456 with memo "GXChain NB"
-Transaction transaction = client.transfer("gxb456", "GXChain NB",
+TransactionResult transactionResult = client.transfer("gxb456", "GXChain NB",
                 GxcAssetAmount.builder().amount(new BigDecimal(0.01)).assetId("1.3.1").precision(assetPrecicion).build(), broadcast);
      
-log.info(transaction.toJsonString());
-log.info("txid:{},fee:{}",transaction.calculateTxid(),((TransferOperation)transaction.getOperations().get(0)).getFee().getAmount().longValue()/ Math.pow(10, assetPrecicion));
+log.info(transactionResult.getTransaction().toJsonString());
+log.info("txid:{},fee:{}",transactionResult.getTransaction().calculateTxid(),((TransferOperation)transaction.getOperations().get(0)).getFee().getAmount().longValue()/ Math.pow(10, assetPrecicion));
 // > txid:2f9532ebc9ba12c285a0240f7fcc2ec24d4aa6d2,fee:0.0118
 // Since gxchain implemented dpos consensus, the transaction will be confirmed until the block becomes irreversible
 // You can find the logic when a transfer operation was confirmed in the example of detectTransaction
@@ -186,6 +195,108 @@ eg.
     ]
   ],
   "current_block_number": 8997053
+}
+```
+## 4. Vote
+``` java
+String privateKey = "5K8iH1jMJxn8TKXXgHJHjkf8zGXsbVPvrCLvU2GekDh2nk4ZPSF";
+String accountId = "1.2.521";
+GXChainClient client = new GXChainClient(privateKey, accountId);
+TransactionResult transactionResult = client.vote(Arrays.asList("zhuliting", "bob"), "GXC", true);
+log.info(transactionResult.getTransaction().toJsonString());
+```
+
+eg.
+```json
+{
+  "ref_block_num": 43594,
+  "ref_block_prefix": 778560704,
+  "expiration": "2019-02-18T03:10:36",
+  "operations": [
+    [
+      6,
+      {
+        "fee": {
+          "amount": 106,
+          "asset_id": "1.3.1"
+        },
+        "account": "1.2.521",
+        "new_options": {
+          "memo_key": "GXC6rAtkQUGJoxRR3gCEnYo2PxqtVNwD4zw9zg64qgrEpYqmjf2kh",
+          "num_committee": 2,
+          "num_witness": 2,
+          "voting_account": "1.2.5",
+          "votes": [
+            "1:24",
+            "0:60",
+            "0:97",
+            "1:98"
+          ],
+          "extensions": []
+        },
+        "extensions": []
+      }
+    ]
+  ],
+  "signatures": [
+    "1c597f2e26a4a21d260c951880a4f60efb3131af59d1d0fd45d2191c5976289f352a275c631e0294a710f83631d3502e7ee55bc784751dc9f6b0ebdbfbfe91297b"
+  ],
+  "extensions": []
+}
+```
+
+## 5. Call contract
+``` java
+String privateKey = "5K8iH1jMJxn8TKXXgHJHjkf8zGXsbVPvrCLvU2GekDh2nk4ZPSF";
+String accountId = "1.2.521";
+GXChainClient client = new GXChainClient(privateKey, accountId);
+//init contract param
+JsonObject param = new JsonObject();
+param.addProperty("user", "robin");
+//call contract method
+TransactionResult transactionResult = client.callContract("hello22", "hi", param, null, true);
+log.info(transactionResult.getTransaction().toJsonString());
+```
+
+eg.
+```json
+{
+  "ref_block_num": 57488,
+  "ref_block_prefix": 2895890777,
+  "expiration": "2019-02-16T07:29:23",
+  "operations": [
+    [
+      75,
+      {
+        "fee": {
+          "amount": 100,
+          "asset_id": "1.3.1"
+        },
+        "account": "1.2.521",
+        "contract_id": "1.2.2072",
+        "method_name": "hi",
+        "data": "05726f62696e",
+        "extensions": []
+      }
+    ]
+  ],
+  "extensions": [],
+  "signatures": [
+    "1c262cc8a943b24a216a300006c4dde21b7391a56142d96d48b9220f08391a93d11334e20b8b540efc444556f08b306af4417dd7688d5603938501b5453b0b95f1"
+  ],
+  "operation_results": [
+    [
+      4,
+      {
+        "billed_cpu_time_us": 107,
+        "fee": {
+          "amount": 100,
+          "asset_id": "1.3.1"
+        },
+        "ram_receipts": []
+      }
+    ]
+  ]
 }
 ```
 # Other

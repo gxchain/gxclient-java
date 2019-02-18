@@ -6,10 +6,11 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.gxchain.client.domian.KeyPair;
 import com.gxchain.client.domian.TransactionResult;
+import com.gxchain.client.domian.params.GetTableRowsParams;
 import com.gxchain.client.graphenej.models.contract.Abi;
 import com.gxchain.client.graphenej.models.contract.ContractAccountProperties;
 import com.gxchain.client.graphenej.models.contract.Table;
-import com.gxchain.client.rpc.GxchainClientFactory;
+import com.gxchain.client.rpc.GXChainClientFactory;
 import com.gxchain.client.util.GXGsonUtil;
 import com.gxchain.client.util.TxSerializerUtil;
 import com.gxchain.common.signature.KeyUtil;
@@ -18,8 +19,8 @@ import com.gxchain.common.signature.utils.PrivateKey;
 import com.gxchain.common.signature.utils.PublicKey;
 import com.gxchain.common.signature.utils.Util;
 import com.gxchain.common.signature.utils.Wif;
-import com.gxchain.client.rpc.GxchainApiRestClient;
-import com.gxchain.client.exception.GxchainApiException;
+import com.gxchain.client.rpc.GXChainApiRestClient;
+import com.gxchain.client.exception.GXChainApiException;
 import com.gxchain.client.graphenej.Address;
 import com.gxchain.client.graphenej.errors.MalformedAddressException;
 import com.gxchain.client.graphenej.models.AccountProperties;
@@ -50,7 +51,7 @@ import java.util.stream.Collectors;
  * @since 2018/7/5 下午2:55
  */
 @Slf4j
-public class GxchainClient {
+public class GXChainClient {
     /**
      * active private key
      */
@@ -76,18 +77,18 @@ public class GxchainClient {
      */
     private boolean isTaskStart = false;
     @Getter
-    private GxchainApiRestClient apiRestClient;
+    private GXChainApiRestClient apiRestClient;
 
     private OkHttpClient httpClient = new OkHttpClient();
 
-    public GxchainClient() {
+    public GXChainClient() {
     }
 
     /**
      * @param activePrivateKey - private key
      * @param accountIdOrName  - account id or account name ,e.g: '1.2.423'|'account1'
      */
-    public GxchainClient(String activePrivateKey, String accountIdOrName) {
+    public GXChainClient(String activePrivateKey, String accountIdOrName) {
         this(activePrivateKey, accountIdOrName, "wss://node1.gxb.io", activePrivateKey);
     }
 
@@ -96,7 +97,7 @@ public class GxchainClient {
      * @param accountIdOrName  - account id or account name ,e.g: '1.2.423'|'account1'
      * @param entryPoint       - entry point network address
      */
-    public GxchainClient(String activePrivateKey, String accountIdOrName, String entryPoint) {
+    public GXChainClient(String activePrivateKey, String accountIdOrName, String entryPoint) {
         this(activePrivateKey, accountIdOrName, entryPoint, activePrivateKey);
     }
 
@@ -106,17 +107,17 @@ public class GxchainClient {
      * @param entryPoint       - entry point network address
      * @param memoPrivateKey   - account memo private key
      */
-    public GxchainClient(String activePrivateKey, String accountIdOrName, String entryPoint, String memoPrivateKey) {
+    public GXChainClient(String activePrivateKey, String accountIdOrName, String entryPoint, String memoPrivateKey) {
         this.activePrivateKey = activePrivateKey;
         this.entryPoint = entryPoint;
         this.memoPrivateKey = memoPrivateKey;
-        this.apiRestClient = GxchainClientFactory.getInstance().newRestCLient(this.entryPoint.replace("wss://", "https://").replace("ws://", "http://"));
+        this.apiRestClient = GXChainClientFactory.getInstance().newRestCLient(this.entryPoint.replace("wss://", "https://").replace("ws://", "http://"));
         if (Pattern.matches("^1\\.2\\.\\d+$", accountIdOrName)) {
             this.accountId = accountIdOrName;
         } else {
             AccountProperties accountProperties = getAccount(accountIdOrName);
             if (accountProperties == null) {
-                throw new GxchainApiException("Account " + accountIdOrName + " not exist");
+                throw new GXChainApiException("Account " + accountIdOrName + " not exist");
             }
             this.accountId = accountProperties.getId();
         }
@@ -217,7 +218,7 @@ public class GxchainClient {
      */
     public String register(String accountName, String activePrivateKey, String ownerKey, String memoKey, String faucet) {
         if (StringUtils.isBlank(activePrivateKey)) {
-            throw new GxchainApiException("active key is required");
+            throw new GXChainApiException("active key is required");
         }
 
         if (StringUtils.isBlank(ownerKey)) {
@@ -269,6 +270,16 @@ public class GxchainClient {
     /////////////////
     ////chain API////
     /////////////////
+
+    /**
+     * query from gxchain
+     * @param method method name
+     * @param params method params
+     * @return
+     */
+    public JsonElement query(String method, JsonArray params) {
+        return apiRestClient.query(method, params);
+    }
 
     /**
      * get block object
@@ -338,6 +349,16 @@ public class GxchainClient {
     }
 
     /**
+     * get assets info by symbols
+     *
+     * @param symbol e.g: ['GXC','PPS']
+     * @return assets
+     */
+    public List<Asset> getAssets(List<String> symbol) {
+        return apiRestClient.getAssets(symbol);
+    }
+
+    /**
      * get block by block height
      *
      * @param blockHeight
@@ -358,9 +379,10 @@ public class GxchainClient {
 
     /**
      * get dynamic global properties
+     *
      * @return
      */
-    public DynamicGlobalProperties getDynamicGlobalProperties(){
+    public DynamicGlobalProperties getDynamicGlobalProperties() {
         return apiRestClient.getDynamicGlobalProperties();
     }
 
@@ -388,23 +410,23 @@ public class GxchainClient {
     public TransactionResult transfer(String toAccountName, String memo, String assetAmount, String feeAsset, boolean isBroadcast) throws MalformedAddressException {
         String[] assets = assetAmount.split(" ");
         if (assets.length != 2 || !Pattern.matches("^\\d+(\\.\\d+)?$", assets[0])) {
-            throw new GxchainApiException("Incorrect format of asset, eg. '100 GXC'");
+            throw new GXChainApiException("Incorrect format of asset, eg. '100 GXC'");
         }
         //查询to账户信息
         AccountProperties toAccount = getAccount(toAccountName);
         if (toAccount == null) {
-            throw new GxchainApiException("Account " + toAccountName + " not exist");
+            throw new GXChainApiException("Account " + toAccountName + " not exist");
         }
         Asset asset = getAsset(assets[1]);
         if (asset == null) {
-            throw new GxchainApiException("Asset " + assets[1] + " not exist");
+            throw new GXChainApiException("Asset " + assets[1] + " not exist");
         }
         //手续费币种id
         String feeAssetId = asset.getObjectId();
         if (StringUtils.isNotBlank(feeAsset) && !StringUtils.equals(assets[1], feeAsset)) {
             Asset asset2 = getAsset(feeAsset);
             if (asset == null) {
-                throw new GxchainApiException("Asset " + assets[1] + " not exist");
+                throw new GXChainApiException("Asset " + assets[1] + " not exist");
             }
             feeAssetId = asset2.getObjectId();
         }
@@ -425,7 +447,7 @@ public class GxchainClient {
             Wif wif = new Wif(this.memoPrivateKey);
             PrivateKey pk = wif.getPrivateKey();
             if (!StringUtils.equals(KeyUtil.getPublicKey(pk).getAddress(), memoFromPublicKey)) {
-                throw new GxchainApiException("memo signer not exist");
+                throw new GXChainApiException("memo signer not exist");
             }
         }
         Memo memoObject = null;
@@ -465,7 +487,7 @@ public class GxchainClient {
         for (String account : accountNames) {
             AccountProperties accountProperties = getAccount(account);
             if (accountProperties == null) {
-                throw new GxchainApiException("account [" + account + "] not exist");
+                throw new GXChainApiException("account [" + account + "] not exist");
             }
             accountIds.add(accountProperties.getId());
         }
@@ -483,12 +505,12 @@ public class GxchainClient {
 
         AccountProperties account = apiRestClient.getAccounts(Arrays.asList(this.accountId)).get(0);
         if (account == null) {
-            throw new GxchainApiException("account_id [" + this.accountId + "] not exist");
+            throw new GXChainApiException("account_id [" + this.accountId + "] not exist");
         }
         //获取资产
         Asset feeAsset = getAsset(feePayingAsset);
         if (feeAsset == null) {
-            throw new GxchainApiException("Asset " + feePayingAsset + " not exist");
+            throw new GXChainApiException("Asset " + feePayingAsset + " not exist");
         }
         JsonElement globalObject = getObject("2.0.0");
 
@@ -501,13 +523,12 @@ public class GxchainClient {
         for (String accountId : accountIds) {
             JsonArray param = new JsonArray();
             param.add(accountId);
-            JsonObject result1 = GXGsonUtil.fromJson(apiRestClient.query("get_witness_by_account", param), JsonObject.class);
+            JsonObject result1 = apiRestClient.query("get_witness_by_account", param).getAsJsonObject();
             if (result1 != null) {
                 votes.add(new Vote(result1.get("vote_id").getAsString()));
             }
-            JsonObject result2 = GXGsonUtil.fromJson(apiRestClient.query("get_committee_member_by_account", param), JsonObject.class);
+            JsonObject result2 = apiRestClient.query("get_committee_member_by_account", param).getAsJsonObject();
             if (result2 != null) {
-                votes.add(new Vote(result2.get("vote_id").getAsString()));
                 votes.add(new Vote(result2.get("vote_id").getAsString()));
             }
         }
@@ -557,8 +578,8 @@ public class GxchainClient {
      * @param transaction
      * @return
      */
-    public TransactionResult broadcast(Transaction transaction) {
-        return new TransactionResult(transaction, apiRestClient.broadcast(transaction.toJsonObject()));
+    public JsonElement broadcast(Transaction transaction) {
+        return apiRestClient.broadcast(transaction.toJsonObject());
     }
 
     /**
@@ -621,6 +642,18 @@ public class GxchainClient {
     }
 
     /**
+     * get contract table rows
+     *
+     * @param contractName       - contract_name
+     * @param tableName          - table name
+     * @param getTableRowsParams - extra params
+     * @return
+     */
+    public JsonElement getTableRowsEx(String contractName, String tableName, GetTableRowsParams getTableRowsParams) {
+        return apiRestClient.getTableRowsEx(contractName, tableName, getTableRowsParams);
+    }
+
+    /**
      * call smart contract method
      *
      * @param contractName - The name of the smart contract
@@ -636,17 +669,17 @@ public class GxchainClient {
         }
         String[] assets = assetAmount.split(" ");
         if (assets.length != 2 || !Pattern.matches("^\\d+(\\.\\d+)?$", assets[0])) {
-            throw new GxchainApiException("Incorrect format of asset, eg. '100 GXC'");
+            throw new GXChainApiException("Incorrect format of asset, eg. '100 GXC'");
         }
 
         Asset asset = getAsset(assets[1]);
         if (asset == null) {
-            throw new GxchainApiException("Asset " + assets[1] + " not exist");
+            throw new GXChainApiException("Asset " + assets[1] + " not exist");
         }
 
         ContractAccountProperties contractAccount = apiRestClient.getContractAccountByName(contractName);
         if (contractAccount == null) {
-            throw new GxchainApiException("Contract " + contractName + " not found");
+            throw new GXChainApiException("Contract " + contractName + " not found");
         }
         String data = TxSerializerUtil.serializeCallData(methodName, param, GXGsonUtil.mapJson(contractAccount.getAbi(), JsonElement.class));
 
@@ -689,7 +722,7 @@ public class GxchainClient {
      * @param blockHeight
      * @param callBack
      */
-    public void detectTransaction(long blockHeight, GxchainCallBack callBack) {
+    public void detectTransaction(long blockHeight, GXChainCallBack callBack) {
         while (true) {
             try {
                 Block block = apiRestClient.getBlock(blockHeight);

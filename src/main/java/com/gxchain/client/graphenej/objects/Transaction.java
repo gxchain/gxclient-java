@@ -202,8 +202,7 @@ public class Transaction implements ByteSerializable, JsonSerializable {
     }
 
     public String calculateTxid() {
-        byte[] bytes = Arrays.copyOfRange(this.toBytes(), Util.hexToBytes(getChainId()).length, this.toBytes().length);
-        return Util.bytesToHex(Sha256Hash.hash(bytes)).substring(0, 40);
+        return Util.bytesToHex(Sha256Hash.hash(TxSerializerUtil.serializeTransaction(this.toJsonObjectNoSign()))).substring(0, 40);
     }
 
     @Override

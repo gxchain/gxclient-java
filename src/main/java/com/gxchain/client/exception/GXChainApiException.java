@@ -7,29 +7,29 @@ import lombok.Getter;
  * @author liruobin
  * @since 2018/7/5 上午10:20
  */
-public class GxchainApiException extends RuntimeException {
+public class GXChainApiException extends RuntimeException {
     @Getter
     private BaseResponse.Error error;
 
-    public GxchainApiException() {
+    public GXChainApiException() {
         super();
     }
 
 
-    public GxchainApiException(String message) {
+    public GXChainApiException(String message) {
         super(message);
     }
 
-    public GxchainApiException(BaseResponse.Error error) {
+    public GXChainApiException(BaseResponse.Error error) {
         this.error = error;
     }
 
-    public GxchainApiException(Throwable cause) {
+    public GXChainApiException(Throwable cause) {
         super(cause);
     }
 
 
-    public GxchainApiException(String message, Throwable cause) {
+    public GXChainApiException(String message, Throwable cause) {
         super(message, cause);
     }
 

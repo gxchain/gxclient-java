@@ -1,10 +1,12 @@
 package com.gxchain.client;
 
 import com.alibaba.fastjson.JSON;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.gxchain.client.domian.KeyPair;
 import com.gxchain.client.domian.TransactionResult;
+import com.gxchain.client.domian.params.GetTableRowsParams;
 import com.gxchain.client.graphenej.models.AccountProperties;
 import com.gxchain.client.graphenej.models.Block;
 import com.gxchain.client.graphenej.models.contract.Abi;
@@ -27,24 +29,24 @@ import java.util.List;
  * @since 2018/7/5 下午10:19
  */
 @Slf4j
-public class GxchainClientTest {
-    String privateKey = "5K8iH1jMJxn8TKXXgHJHjkf8zGXsbVPvrCLvU2GekDh2nk4ZPSF";
-    String accountId = "1.2.323";
-    String accountName = "des-test";
-    String node = "ws://192.168.1.118:28090";
+public class GXChainClientTest {
+//    String privateKey = "5K8iH1jMJxn8TKXXgHJHjkf8zGXsbVPvrCLvU2GekDh2nk4ZPSF";
+//    String accountId = "1.2.323";
+//    String accountName = "des-test";
+//    String node = "ws://192.168.1.118:28090";
 
-//    String privateKey = "5J8CYVMcMz2f7vDc9fYcySbVUx7f3JnCJJVBeE6eWJmwZToTSqz";
-//    String accountId = "1.2.521";
-//    String accountName = "liruobin1";
-//    String node = "wss://testnet.gxchain.org";
+    String privateKey = "5J8CYVMcMz2f7vDc9fYcySbVUx7f3JnCJJVBeE6eWJmwZToTSqz";
+    String accountId = "1.2.521";
+    String accountName = "liruobin1";
+    String node = "wss://testnet.gxchain.org";
 
     String memoPrivate = privateKey;
     int assetPrecicion = 5;
-    GxchainClient client = new GxchainClient(privateKey, accountId, node);
+    GXChainClient client = new GXChainClient(privateKey, accountId, node);
 
     @Test
     public void generateKey() throws Exception {
-        System.out.println(JSON.toJSONString(GxchainClient.generateKey()));
+        System.out.println(JSON.toJSONString(GXChainClient.generateKey()));
         /**
          *{
          "brainKey": "plass niche banian hurter spadone ligular fancify hayseed theres proxysm slub chess talisay orillon steam curtail",
@@ -56,26 +58,38 @@ public class GxchainClientTest {
 
     @Test
     public void privateToPublic() {
-        System.out.println(GxchainClient.privateToPublic("5JTHkfd8gH6ebsSjRRJbVhEa7u5vh2YZTJH3qC2osjUM9XxKvKR"));
+        System.out.println(GXChainClient.privateToPublic("5JTHkfd8gH6ebsSjRRJbVhEa7u5vh2YZTJH3qC2osjUM9XxKvKR"));
     }
 
     @Test
     public void isValidPublic() {
-        System.out.println(GxchainClient.isValidPublic("GXC5bgYX7xNDt1YG7DjD178nK6x9phHAHjZJA7Ug3dkeefLsATiCQ"));
+        System.out.println(GXChainClient.isValidPublic("GXC5bgYX7xNDt1YG7DjD178nK6x9phHAHjZJA7Ug3dkeefLsATiCQ"));
     }
 
     @Test
     public void isValidPrivate() {
-        System.out.println(GxchainClient.isValidPrivate("5JTHkfd8gH6ebsSjRRJbVhEa7u5vh2YZTJH3qC2osjUM9XxKvKR"));
+        System.out.println(GXChainClient.isValidPrivate("5JTHkfd8gH6ebsSjRRJbVhEa7u5vh2YZTJH3qC2osjUM9XxKvKR"));
     }
 
     @Test
     public void register() throws Exception {
-        KeyPair keyPair = GxchainClient.generateKey();
+        KeyPair keyPair = GXChainClient.generateKey();
         System.out.println(client.register("liruobin2", keyPair.getPublicKey(), "", "", "https://testnet.faucet.gxchain.org"));
         /**
          * {"ref_block_num":18490,"ref_block_prefix":827801284,"expiration":"2018-07-10T08:18:18","operations":[[5,{"fee":{"amount":114746,"asset_id":"1.3.0"},"registrar":"1.2.6","referrer":"1.2.6","referrer_percent":0,"name":"lirb-test002","owner":{"weight_threshold":1,"account_auths":[],"key_auths":[["GXC84N2ckGU7UwzqZUYxGS1Bm47o4poofUKno2RJ15xU2ZDwwrSsB",1]],"address_auths":[]},"active":{"weight_threshold":1,"account_auths":[],"key_auths":[["GXC84N2ckGU7UwzqZUYxGS1Bm47o4poofUKno2RJ15xU2ZDwwrSsB",1]],"address_auths":[]},"options":{"memo_key":"GXC84N2ckGU7UwzqZUYxGS1Bm47o4poofUKno2RJ15xU2ZDwwrSsB","voting_account":"1.2.5","num_witness":0,"num_committee":0,"votes":[],"extensions":[]},"extensions":{}}]],"extensions":[],"signatures":["1f3a0c4cbeda10d5387296b1d6ecff8e2e47250427daad4efd30c2ff975ff43ce311d667f4e833c218f97dfc591b5370a0ca13d20e50a1cca84cb00d9cc2bdf1c3"]}
          */
+    }
+
+    @Test
+    public void query() {
+        JsonArray param = new JsonArray();
+        JsonArray symbols = new JsonArray();
+        symbols.add("GXC");
+        symbols.add("PPS");
+        param.add(symbols);
+        //{"id":0,"method":"lookup_asset_symbols","params":[["GXC","PPS"]],"jsonrpc":"2.0"}
+        JsonElement result = client.query("lookup_asset_symbols", param);
+        log.info(result.toString());
     }
 
     @Test
@@ -98,7 +112,7 @@ public class GxchainClientTest {
 
     @Test
     public void getAccountByPublicKey() {
-        log.info(JSON.toJSONString(client.getAccountByPublicKey(GxchainClient.privateToPublic(privateKey))));
+        log.info(JSON.toJSONString(client.getAccountByPublicKey(GXChainClient.privateToPublic(privateKey))));
     }
 
     @Test
@@ -110,7 +124,13 @@ public class GxchainClientTest {
     @Test
     public void getAsset() {
         Asset asset = client.getAsset("GXC");
-        log.info(asset.getObjectId());
+        log.info(GXGsonUtil.toJson(asset));
+    }
+
+    @Test
+    public void getAssets() {
+        List<Asset> assets = client.getAssets(Arrays.asList("GXC", "PPS"));
+        log.info(GXGsonUtil.toJson(assets));
     }
 
     @Test
@@ -135,7 +155,8 @@ public class GxchainClientTest {
 
     @Test
     public void vote() {
-        client.vote(Arrays.asList("zhuliting", "bob"), "GXC", true);
+        TransactionResult transactionResult = client.vote(Arrays.asList("zhuliting", "bob"), "GXC", true);
+        log.info(transactionResult.getTransaction().toJsonString());
     }
 
     @Test
@@ -157,11 +178,18 @@ public class GxchainClientTest {
     }
 
     @Test
+    public void getTableRowsEx() {
+        GetTableRowsParams params = GetTableRowsParams.builder().lowerBound(0).upperBound(400).limit(10).build();
+        JsonElement result = client.getTableRowsEx("bank", "account", params);
+        log.info(result.toString());
+    }
+
+    @Test
     public void callContract() {
         JsonObject param = new JsonObject();
         param.addProperty("user", "robin");
-        client.callContract("hello22", "hi", param, null, true);
-
+        TransactionResult transactionResult = client.callContract("hello22", "hi", param, null, true);
+        log.info(transactionResult.getTransaction().toJsonString());
 //        JsonObject params = new JsonObject();
 //        params.addProperty("to_account", "des-test");
 //

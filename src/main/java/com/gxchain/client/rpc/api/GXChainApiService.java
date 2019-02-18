@@ -11,7 +11,7 @@ import retrofit2.http.POST;
  * @author liruobin
  * @since 2018/7/5 上午10:33
  */
-public interface GxchainApiService {
+public interface GXChainApiService {
     @POST("/rpc")
     Call<WitnessResponse<JsonElement>> call(@Body ApiCall apiCall);
 }
