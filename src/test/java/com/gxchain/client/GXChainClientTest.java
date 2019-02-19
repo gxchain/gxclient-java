@@ -7,6 +7,7 @@ import com.google.gson.JsonObject;
 import com.gxchain.client.domian.KeyPair;
 import com.gxchain.client.domian.TransactionResult;
 import com.gxchain.client.domian.params.GetTableRowsParams;
+import com.gxchain.client.graphenej.Util;
 import com.gxchain.client.graphenej.models.AccountProperties;
 import com.gxchain.client.graphenej.models.Block;
 import com.gxchain.client.graphenej.models.contract.Abi;
@@ -246,16 +247,16 @@ public class GXChainClientTest {
         BroadcastRequestParams requestParams =
                 BroadcastRequestParams.builder().
                         from(new UserAccount(accountId)).
-                        to(new UserAccount("1.2.21")).
+                        to(new UserAccount("1.2.2136")).
                         proxyAccount(new UserAccount(accountId)).
                         amount(new AssetAmount(10L, "1.3.1")).percentage(1000)
                         .memo("test").
                         expiration(DateTime.now().plusMinutes(30).getMillis() / 1000).
                         build();
 
-        String sig = SignatureUtil.signature(requestParams.toBytes(), privateKey);//发起方私钥签名
+        String sig = Util.bytesToHex(SignatureUtil.signature(requestParams.toBytes(), privateKey));//发起方私钥签名
         requestParams.setSignatures(Arrays.asList(sig));
-        TransactionResult transactionResult = client.proxyTransfer("proxy test", "1.3.1", requestParams, false);
+        TransactionResult transactionResult = client.proxyTransfer("proxy test", "1.3.1", requestParams, true);
         log.info(transactionResult.getTransaction().toJsonString());
     }
 

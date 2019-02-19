@@ -10,6 +10,8 @@ import com.gxchain.client.graphenej.operations.BaseOperation;
 import com.gxchain.client.graphenej.operations.LimitOrderCreateOperation;
 import com.gxchain.client.graphenej.operations.TransferOperation;
 import com.gxchain.client.util.TxSerializerUtil;
+import com.gxchain.common.signature.SignatureUtil;
+import com.gxchain.common.signature.utils.Wif;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.bitcoinj.core.DumpedPrivateKey;
@@ -150,43 +152,7 @@ public class Transaction implements ByteSerializable, JsonSerializable {
      * @return: A valid signature of the current transaction.
      */
     public byte[] getGrapheneSignature() {
-        log.debug("start sign");
-        boolean isGrapheneCanonical = false;
-        byte[] sigData = null;
-
-        while (!isGrapheneCanonical) {
-            byte[] serializedTransaction = this.toBytes();
-            Sha256Hash hash = Sha256Hash.wrap(Sha256Hash.hash(serializedTransaction));
-            int recId = -1;
-            ECKey.ECDSASignature sig = privateKey.sign(hash);
-
-            // Now we have to work backwards to figure out the recId needed to recover the signature.
-            for (int i = 0; i < 4; i++) {
-                ECKey k = ECKey.recoverFromSignature(i, sig, hash, privateKey.isCompressed());
-                if (k != null && k.getPubKeyPoint().equals(privateKey.getPubKeyPoint())) {
-                    recId = i;
-                    break;
-                }
-            }
-
-            sigData = new byte[65];  // 1 header + 32 bytes for R + 32 bytes for S
-            int headerByte = recId + 27 + (privateKey.isCompressed() ? 4 : 0);
-            sigData[0] = (byte) headerByte;
-            System.arraycopy(Utils.bigIntegerToBytes(sig.r, 32), 0, sigData, 1, 32);
-            System.arraycopy(Utils.bigIntegerToBytes(sig.s, 32), 0, sigData, 33, 32);
-
-            //             Further "canonicality" tests
-            if (((sigData[1] & 0x80) != 0) || (sigData[1] == 0) || ((sigData[2] & 0x80) != 0) || ((sigData[33] & 0x80) != 0) || (sigData[33] == 0)
-                    || ((sigData[34] & 0x80) != 0)) {
-                this.blockData.setExpiration(this.blockData.getExpiration() + 1);
-            } else {
-                isGrapheneCanonical = true;
-            }
-        }
-        //        String s = Util.byteToString(Sha256Hash.hash(this.toBytes()));
-        //        String sign = SignatureUtil.signature(s,WSConstants.WS_ACCOUNT_PRIKEY);
-        log.debug("sign finished");
-        return sigData;
+        return SignatureUtil.signature(this.toBytes(),new Wif(privateKey).toString());
     }
 
     /**
