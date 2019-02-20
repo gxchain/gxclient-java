@@ -149,13 +149,11 @@ log.info(result);
 ``` java
 String privateKey = "5K8iH1jMJxn8TKXXgHJHjkf8zGXsbVPvrCLvU2GekDh2nk4ZPSF";
 String accountId = "1.2.323";
-int assetPrecicion = 5;
 // set broadcast to false so we could calculate the fee before broadcasting
 boolean broadcast = true;
 GXChainClient client = new GxchainClient(privateKey, accountId);
-//Sending 0.01GXS to gxb456 with memo "GXChain NB"
-TransactionResult transactionResult = client.transfer("gxb456", "GXChain NB",
-                GxcAssetAmount.builder().amount(new BigDecimal(0.01)).assetId("1.3.1").precision(assetPrecicion).build(), broadcast);
+//Sending 1 GXC to gxb456 with memo "GXChain NB"
+TransactionResult transactionResult = client.transfer("gxb456", "GXChain NB","1 GXC"，"GXC", broadcast);
      
 log.info(transactionResult.getTransaction().toJsonString());
 log.info("txid:{},fee:{}",transactionResult.getTransaction().calculateTxid(),((TransferOperation)transaction.getOperations().get(0)).getFee().getAmount().longValue()/ Math.pow(10, assetPrecicion));
