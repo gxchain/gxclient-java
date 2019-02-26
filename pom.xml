@@ -8,7 +8,7 @@
 
     <groupId>com.gxchain.common</groupId>
     <artifactId>gxchain-client</artifactId>
-    <version>2.0.1-RELEASE</version>
+    <version>2.0.2-RELEASE</version>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <com.squareup.retrofit2.version>2.5.0</com.squareup.retrofit2.version>
@@ -97,7 +97,7 @@
         <dependency>
             <groupId>com.gxchain.common</groupId>
             <artifactId>common-signature</artifactId>
-            <version>1.1.0-RELEASE</version>
+            <version>1.1.1-RELEASE</version>
         </dependency>
     </dependencies>
 
