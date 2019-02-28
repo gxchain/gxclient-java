@@ -148,7 +148,7 @@ public class GXChainClientTest {
 
     @Test
     public void transfer() throws Exception {
-        TransactionResult transactionResult = client.transfer("liruobin2", "", "1 GXC", "GXC", true);
+        TransactionResult transactionResult = client.transfer("liruobin2", "", "1.1 GXC", "GXC", true);
         log.info(transactionResult.getTransaction().toJsonString());
         log.info("txid:{},fee:{}", transactionResult.getTransaction().calculateTxid(), ((TransferOperation) transactionResult.getTransaction().getOperations().get(0)).getFee().getAmount().longValue() / Math.pow(10, 5));
         // > txid:2f9532ebc9ba12c285a0240f7fcc2ec24d4aa6d2,fee:0.0118

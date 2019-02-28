@@ -2,6 +2,7 @@ package com.gxchain.client.util;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.gxchain.client.exception.GXChainApiException;
 import com.gxchain.common.signature.utils.Util;
 import lombok.extern.slf4j.Slf4j;
 
@@ -22,16 +23,17 @@ public class TxSerializerUtil {
         ScriptEngineManager manager = new ScriptEngineManager();
         engine = manager.getEngineByName("nashorn");
         try {
-            InputStream inputStream = TxSerializerUtil.class.getClassLoader().getResourceAsStream( "js" + File.separator + "tx_serializer.min.js");
+            InputStream inputStream = TxSerializerUtil.class.getClassLoader().getResourceAsStream("js/tx_serializer.min.js");
             StringBuilder script = new StringBuilder();
             BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
-            String line="";
-            while((line = br.readLine())!=null){
+            String line = "";
+            while ((line = br.readLine()) != null) {
                 script.append(line);
             }
             engine.eval(script.toString());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
+            throw new GXChainApiException(e.getMessage());
         }
         log.info("init script engine finish");
     }
@@ -44,8 +46,8 @@ public class TxSerializerUtil {
             return Util.hexToBytes(result);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
+            throw new GXChainApiException(e.getMessage());
         }
-        return null;
     }
 
     public static String serializeCallData(String methodName, JsonElement param, JsonElement abi) {
@@ -54,7 +56,7 @@ public class TxSerializerUtil {
             return (String) engine.eval(script);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
+            throw new GXChainApiException(e.getMessage());
         }
-        return null;
     }
 }
