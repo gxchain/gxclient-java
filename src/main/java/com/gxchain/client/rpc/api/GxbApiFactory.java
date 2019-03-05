@@ -2,6 +2,7 @@ package com.gxchain.client.rpc.api;
 
 
 import com.gxchain.client.exception.HttpAccessFailException;
+import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Response;
@@ -44,7 +45,7 @@ public class GxbApiFactory {
         httpClient.dispatcher().setMaxRequestsPerHost(100);
         httpClient.dispatcher().setMaxRequests(150);
 
-        retrofit = new Retrofit.Builder().baseUrl(baseUrl).addConverterFactory(GxbGsonConverterFactory.create()).callFactory(httpClient).build();
+        retrofit = new Retrofit.Builder().baseUrl(HttpUrl.parse(baseUrl)).addConverterFactory(GxbGsonConverterFactory.create()).callFactory(httpClient).build();
     }
 
 

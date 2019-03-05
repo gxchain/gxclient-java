@@ -18,7 +18,7 @@ java 8
  <dependency>
     <groupId>com.gxchain.common</groupId>
     <artifactId>gxchain-client</artifactId>
-    <version>2.0.3-RELEASE</version>
+    <version>2.0.4-RELEASE</version>
  </dependency>
  add a repository to pom.xml
  <repositories>

@@ -206,7 +206,7 @@ public class GXChainApiRestClientImpl implements GXChainApiRestClient {
         params.add(tableName);
         params.add(GXGsonUtil.mapJson(getTableRowsParams, JsonObject.class));
 
-        return GXGsonUtil.mapJson(query(RPC.GET_TABLE_ROWS, params), JsonElement.class);
+        return GXGsonUtil.mapJson(query(RPC.GET_TABLE_ROWS_EX, params), JsonElement.class);
     }
 
     @Override

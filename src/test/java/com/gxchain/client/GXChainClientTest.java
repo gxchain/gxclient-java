@@ -180,7 +180,7 @@ public class GXChainClientTest {
 
     @Test
     public void getTableRowsEx() {
-        GetTableRowsParams params = GetTableRowsParams.builder().lowerBound(0).upperBound(400).limit(10).build();
+        GetTableRowsParams params = GetTableRowsParams.builder().lowerBound(0).upperBound(-1).limit(10).build();
         JsonElement result = client.getTableRowsEx("bank", "account", params);
         log.info(result.toString());
     }
