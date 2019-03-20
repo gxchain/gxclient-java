@@ -183,7 +183,9 @@ public class Transaction implements ByteSerializable, JsonSerializable {
 
         // Getting the signature before anything else,
         // since this might change the transaction expiration data slightly
+        long l1 = System.currentTimeMillis();
         byte[] signature = getGrapheneSignature();
+        logger.info("signature consuming " + (System.currentTimeMillis() - l1) + " ms");
         String sign = Util.bytesToHex(signature);
         this.signature = sign;
 

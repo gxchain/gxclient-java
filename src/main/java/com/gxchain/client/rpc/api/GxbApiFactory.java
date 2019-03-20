@@ -32,8 +32,9 @@ public class GxbApiFactory {
             @Override
             public Response intercept(Chain chain) throws IOException {
                 logger.info("gxb api request:" + chain.request().toString());
+                long l1 = System.currentTimeMillis();
                 Response response = chain.proceed(chain.request());
-                logger.info("gxb response:" + response.toString());
+                logger.info("gxb response," + (System.currentTimeMillis() - l1) + "ms," + response.toString());
                 if (!response.isSuccessful()) {
                     throw new HttpAccessFailException(response.body().string());
                 } else {

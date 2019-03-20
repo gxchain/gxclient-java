@@ -160,8 +160,17 @@ public interface GXChainApiRestClient {
 
     /**
      * 广播交易
+     * 广播成功后立即返回，耗时短
      * @param transaction
      * @return
      */
     JsonElement broadcast(JsonObject transaction);
+
+    /**
+     * 广播交易
+     * 打包成功后返回，不过被打包的也有可能被回滚，耗时长
+     * @param transaction
+     * @return
+     */
+    JsonElement broadcastSynchronous(JsonObject transaction);
 }

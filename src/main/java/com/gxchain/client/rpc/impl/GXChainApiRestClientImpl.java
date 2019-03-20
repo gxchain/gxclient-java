@@ -213,6 +213,14 @@ public class GXChainApiRestClientImpl implements GXChainApiRestClient {
     public JsonElement broadcast(JsonObject transaction) {
         JsonArray params = new JsonArray();
         params.add(transaction);
+        ApiCall apiCall = new ApiCall(2, RPC.BROADCAST_TRANSACTION, params, RPC.VERSION, sequenceId++);
+        return GXGsonUtil.mapJson(execute(apiCall), JsonElement.class);
+    }
+
+    @Override
+    public JsonElement broadcastSynchronous(JsonObject transaction) {
+        JsonArray params = new JsonArray();
+        params.add(transaction);
         ApiCall apiCall = new ApiCall(2, RPC.BROADCAST_TRANSACTION_SYNCHRONOUS, params, RPC.VERSION, sequenceId++);
         return GXGsonUtil.mapJson(execute(apiCall), JsonElement.class);
     }
