@@ -603,8 +603,9 @@ public class GXChainClient {
         Transaction transaction = new Transaction(this.activePrivateKey, operations);
         DynamicGlobalProperties dynamicProperties = apiRestClient.getDynamicGlobalProperties();
         long expirationTime = (dynamicProperties.time.getTime() / 1000) + Transaction.DEFAULT_EXPIRATION_TIME;
-        String headBlockId = dynamicProperties.head_block_id;
-        long headBlockNumber = dynamicProperties.head_block_number;
+        long headBlockNumber = dynamicProperties.last_irreversible_block_num;
+        Block block = apiRestClient.getBlock(headBlockNumber);
+        String headBlockId = block.block_id;
         //最新的区块信息
         transaction.setBlockData(new BlockData(headBlockNumber, headBlockId, expirationTime));
         //设置交易费用

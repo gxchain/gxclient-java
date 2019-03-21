@@ -257,7 +257,7 @@ public class GXChainClientTest {
         String sig = Util.bytesToHex(SignatureUtil.signature(requestParams.toBytes(), privateKey));//发起方私钥签名
         requestParams.setSignatures(Arrays.asList(sig));
         TransactionResult transactionResult = client.proxyTransfer("proxy test", "1.3.1", requestParams, true);
-        log.info(transactionResult.getTransaction().toJsonString());
+       // log.info(transactionResult.getTransaction().toJsonString());
     }
 
     @Test

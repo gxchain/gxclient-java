@@ -42,11 +42,6 @@ public class BlockData implements ByteSerializable {
      * @param relative_expiration: The expiration time.
      */
     public BlockData(long head_block_number, String head_block_id, long relative_expiration) {
-        String hashData = head_block_id.substring(8, 16);
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < 8; i = i + 2) {
-            builder.append(hashData.substring(6 - i, 8 - i));
-        }
         this.setRefBlockNum(head_block_number);
         this.setRefBlockPrefix(head_block_id);
         this.expiration = relative_expiration;

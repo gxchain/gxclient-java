@@ -37,7 +37,7 @@ public class Transaction implements ByteSerializable, JsonSerializable {
     private final Logger logger = LoggerFactory.getLogger(Transaction.class);
 
     /* Default expiration time */
-    public static final int DEFAULT_EXPIRATION_TIME = 30;
+    public static final int DEFAULT_EXPIRATION_TIME = 120;
 
     /* Constant field names used for serialization/deserialization purposes */
     public static final String KEY_EXPIRATION = "expiration";
