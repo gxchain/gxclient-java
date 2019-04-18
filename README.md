@@ -151,7 +151,7 @@ String privateKey = "5K8iH1jMJxn8TKXXgHJHjkf8zGXsbVPvrCLvU2GekDh2nk4ZPSF";
 String accountId = "1.2.323";
 // set broadcast to false so we could calculate the fee before broadcasting
 boolean broadcast = true;
-GXChainClient client = new GxchainClient(privateKey, accountId);
+GXChainClient client = new GxchainClient(privateKey, accountId,"wss://testnet.gxchain.org");
 //Sending 1 GXC to gxb456 with memo "GXChain NB"
 TransactionResult transactionResult = client.transfer("gxb456", "GXChain NB","1 GXC"，"GXC", broadcast);
      
@@ -208,7 +208,7 @@ eg.
 ``` java
 String privateKey = "5K8iH1jMJxn8TKXXgHJHjkf8zGXsbVPvrCLvU2GekDh2nk4ZPSF";
 String accountId = "1.2.521";
-GXChainClient client = new GXChainClient(privateKey, accountId);
+GXChainClient client = new GXChainClient(privateKey, accountId,"wss://testnet.gxchain.org");
 TransactionResult transactionResult = client.vote(Arrays.asList("zhuliting", "bob"), "GXC", true);
 log.info(transactionResult.getTransaction().toJsonString());
 ```
@@ -256,7 +256,7 @@ eg.
 ``` java
 String privateKey = "5K8iH1jMJxn8TKXXgHJHjkf8zGXsbVPvrCLvU2GekDh2nk4ZPSF";
 String accountId = "1.2.521";
-GXChainClient client = new GXChainClient(privateKey, accountId);
+GXChainClient client = new GXChainClient(privateKey, accountId,"wss://testnet.gxchain.org");
 //init contract param
 JsonObject param = new JsonObject();
 param.addProperty("user", "robin");
