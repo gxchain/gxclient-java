@@ -188,7 +188,7 @@ public class LimitOrderCreateOperation extends BaseOperation {
                 // This block is used just to check if we are in the first step of the deserialization
                 // when we are dealing with an array.
                 JsonArray serializedTransfer = json.getAsJsonArray();
-                if(serializedTransfer.get(0).getAsInt() != OperationType.LIMIT_ORDER_CREATE_OPERATION.ordinal()){
+                if(serializedTransfer.get(0).getAsInt() != OperationType.LIMIT_ORDER_CREATE_OPERATION.getCode()){
                     // If the operation type does not correspond to a transfer operation, we return null
                     return null;
                 }else{

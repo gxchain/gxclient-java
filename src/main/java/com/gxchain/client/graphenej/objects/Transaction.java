@@ -6,25 +6,29 @@ import com.gxchain.client.graphenej.Util;
 import com.gxchain.client.graphenej.enums.OperationType;
 import com.gxchain.client.graphenej.interfaces.ByteSerializable;
 import com.gxchain.client.graphenej.interfaces.JsonSerializable;
+import com.gxchain.client.graphenej.operations.AccountCreateOperation;
 import com.gxchain.client.graphenej.operations.BaseOperation;
 import com.gxchain.client.graphenej.operations.LimitOrderCreateOperation;
 import com.gxchain.client.graphenej.operations.TransferOperation;
 import com.gxchain.client.util.TxSerializerUtil;
 import com.gxchain.common.signature.SignatureUtil;
+import com.gxchain.common.signature.utils.StringUtils;
 import com.gxchain.common.signature.utils.Wif;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.bitcoinj.core.DumpedPrivateKey;
 import org.bitcoinj.core.ECKey;
 import org.bitcoinj.core.Sha256Hash;
-import org.bitcoinj.core.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Type;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.TimeZone;
 
 /**
  * Class used to represent a generic Graphene transaction.
@@ -39,7 +43,9 @@ public class Transaction implements ByteSerializable, JsonSerializable {
     /* Default expiration time */
     public static final int DEFAULT_EXPIRATION_TIME = 120;
 
+
     /* Constant field names used for serialization/deserialization purposes */
+    public static final String KEY_CHAIN_ID = "chain_id";
     public static final String KEY_EXPIRATION = "expiration";
     public static final String KEY_SIGNATURES = "signatures";
     public static final String KEY_OPERATIONS = "operations";
@@ -70,6 +76,22 @@ public class Transaction implements ByteSerializable, JsonSerializable {
         this.blockData = blockData;
         this.operations = operationList;
         this.extensions = new Extensions();
+    }
+
+    /**
+     * Constructor used to build a BlockTransaction object without a private key. This kind of object
+     * is used to represent a transaction data that we don't intend to serialize and sign.
+     *
+     * @param chainId
+     * @param blockData:     Block data instance, containing information about the location of this transaction in the blockchain.
+     * @param operationList: The list of operations included in this transaction.
+     * @param signature
+     */
+    public Transaction(String chainId, BlockData blockData, List<BaseOperation> operationList, String signature) {
+        this.chainId = chainId;
+        this.blockData = blockData;
+        this.operations = operationList;
+        this.signature = signature;
     }
 
     /**
@@ -120,8 +142,9 @@ public class Transaction implements ByteSerializable, JsonSerializable {
      * @param fees: New fees to apply
      */
     public void setFees(List<AssetAmount> fees) {
-        for (int i = 0; i < operations.size(); i++)
+        for (int i = 0; i < operations.size(); i++) {
             operations.get(i).setFee(fees.get(i));
+        }
     }
 
     public ECKey getPrivateKey() {
@@ -152,7 +175,7 @@ public class Transaction implements ByteSerializable, JsonSerializable {
      * @return: A valid signature of the current transaction.
      */
     public byte[] getGrapheneSignature() {
-        return SignatureUtil.signature(this.toBytes(),new Wif(privateKey).toString());
+        return SignatureUtil.signature(this.toBytes(), new Wif(privateKey).toString());
     }
 
     /**
@@ -165,7 +188,22 @@ public class Transaction implements ByteSerializable, JsonSerializable {
         // Creating a List of Bytes and adding the first bytes from the chain apiId
         List<Byte> byteArray = new ArrayList<Byte>();
         byteArray.addAll(Bytes.asList(Util.hexToBytes(getChainId())));
-        byteArray.addAll(Bytes.asList(TxSerializerUtil.serializeTransaction(this.toJsonObjectNoSign())));
+
+        // Adding the block data
+        byteArray.addAll(Bytes.asList(this.blockData.toBytes()));
+
+        // Adding the number of operations
+        byteArray.add((byte) this.operations.size());
+
+        // Adding all the operations
+        for (BaseOperation operation : operations) {
+            byteArray.add(operation.getId());
+            byteArray.addAll(Bytes.asList(operation.toBytes()));
+        }
+
+        // Adding extensions byte
+        byteArray.addAll(Bytes.asList(this.extensions.toBytes()));
+
         return Bytes.toArray(byteArray);
     }
 
@@ -183,16 +221,17 @@ public class Transaction implements ByteSerializable, JsonSerializable {
 
         // Getting the signature before anything else,
         // since this might change the transaction expiration data slightly
-        long l1 = System.currentTimeMillis();
-        byte[] signature = getGrapheneSignature();
-        logger.info("signature consuming " + (System.currentTimeMillis() - l1) + " ms");
-        String sign = Util.bytesToHex(signature);
-        this.signature = sign;
+        if (StringUtils.isEmpty(this.signature)) {
+            long l1 = System.currentTimeMillis();
+            byte[] signature = getGrapheneSignature();
+            logger.info("signature consuming " + (System.currentTimeMillis() - l1) + " ms");
+            this.signature = Util.bytesToHex(signature);
+        }
 
         JsonObject obj = toJsonObjectNoSign();
         // Adding signatures
         JsonArray signatureArray = new JsonArray();
-        signatureArray.add(sign);
+        signatureArray.add(this.signature);
         obj.add(KEY_SIGNATURES, signatureArray);
         return obj;
 
@@ -205,7 +244,7 @@ public class Transaction implements ByteSerializable, JsonSerializable {
         obj.addProperty(KEY_REF_BLOCK_PREFIX, blockData.getRefBlockPrefix());
 
         // Formatting expiration time
-        Date expirationTime = new Date(blockData.getExpiration() * 1000);
+        Date expirationTime = new Date(blockData.getExpiration());
         SimpleDateFormat dateFormat = new SimpleDateFormat(Util.TIME_DATE_FORMAT);
         dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 
@@ -267,29 +306,42 @@ public class Transaction implements ByteSerializable, JsonSerializable {
             Date expirationDate = dateFormat.parse(expiration, new ParsePosition(0));
             BlockData blockData = new BlockData(refBlockNum, refBlockPrefix, expirationDate.getTime());
 
+            // Parsing chainId
+            String chainId = null == jsonObject.get(KEY_CHAIN_ID) ? null : jsonObject.get(KEY_CHAIN_ID).getAsString();
+
+            // Parsing signatures
+            String signature = null;
+            try {
+                signature = null == jsonObject.get(KEY_SIGNATURES) ? null : jsonObject.get(KEY_SIGNATURES).getAsString();
+            } catch (Exception e) {
+            }
+
             // Parsing operation list
             BaseOperation operation = null;
             ArrayList<BaseOperation> operationList = new ArrayList<>();
             try {
                 for (JsonElement jsonOperation : jsonObject.get(KEY_OPERATIONS).getAsJsonArray()) {
                     int operationId = jsonOperation.getAsJsonArray().get(0).getAsInt();
-                    if (operationId == OperationType.TRANSFER_OPERATION.ordinal()) {
+                    if (operationId == OperationType.TRANSFER_OPERATION.getCode()) {
                         operation = context.deserialize(jsonOperation, TransferOperation.class);
-                    } else if (operationId == OperationType.LIMIT_ORDER_CREATE_OPERATION.ordinal()) {
+                    } else if (operationId == OperationType.LIMIT_ORDER_CREATE_OPERATION.getCode()) {
                         operation = context.deserialize(jsonOperation, LimitOrderCreateOperation.class);
+                    } else if (operationId == OperationType.ACCOUNT_CREATE_OPERATION.getCode()) {
+                        operation = context.deserialize(jsonOperation, AccountCreateOperation.class);
                     }
-                    if (operation != null)
+                    if (operation != null) {
                         operationList.add(operation);
+                    }
                     operation = null;
                 }
-                return new Transaction(blockData, operationList);
+                return new Transaction(chainId, blockData, operationList, signature);
             } catch (Exception e) {
                 LOGGER.info("Exception. Msg: " + e.getMessage());
                 for (StackTraceElement el : e.getStackTrace()) {
                     LOGGER.info(el.getFileName() + "#" + el.getMethodName() + ":" + el.getLineNumber());
                 }
             }
-            return new Transaction(blockData, operationList);
+            return new Transaction(chainId, blockData, operationList, signature);
         }
     }
 }
