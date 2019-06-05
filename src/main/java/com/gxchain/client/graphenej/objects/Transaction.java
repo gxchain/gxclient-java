@@ -6,9 +6,7 @@ import com.gxchain.client.graphenej.Util;
 import com.gxchain.client.graphenej.enums.OperationType;
 import com.gxchain.client.graphenej.interfaces.ByteSerializable;
 import com.gxchain.client.graphenej.interfaces.JsonSerializable;
-import com.gxchain.client.graphenej.operations.BaseOperation;
-import com.gxchain.client.graphenej.operations.LimitOrderCreateOperation;
-import com.gxchain.client.graphenej.operations.TransferOperation;
+import com.gxchain.client.graphenej.operations.*;
 import com.gxchain.client.util.TxSerializerUtil;
 import com.gxchain.common.signature.SignatureUtil;
 import com.gxchain.common.signature.utils.Wif;
@@ -105,6 +103,12 @@ public class Transaction implements ByteSerializable, JsonSerializable {
         this.operations = operationList;
     }
 
+    public Transaction(BlockData blockData, List<BaseOperation> operationList, String signature) {
+        this.blockData = blockData;
+        this.operations = operationList;
+        this.signature = signature;
+    }
+
     /**
      * Updates the block data
      *
@@ -122,6 +126,10 @@ public class Transaction implements ByteSerializable, JsonSerializable {
     public void setFees(List<AssetAmount> fees) {
         for (int i = 0; i < operations.size(); i++)
             operations.get(i).setFee(fees.get(i));
+    }
+
+    public void setPrivateKey(String wif){
+        this.privateKey = DumpedPrivateKey.fromBase58(null, wif).getKey();
     }
 
     public ECKey getPrivateKey() {
@@ -152,7 +160,7 @@ public class Transaction implements ByteSerializable, JsonSerializable {
      * @return: A valid signature of the current transaction.
      */
     public byte[] getGrapheneSignature() {
-        return SignatureUtil.signature(this.toBytes(),new Wif(privateKey).toString());
+        return SignatureUtil.signature(this.toBytes(), new Wif(privateKey).toString());
     }
 
     /**
@@ -265,31 +273,45 @@ public class Transaction implements ByteSerializable, JsonSerializable {
             SimpleDateFormat dateFormat = new SimpleDateFormat(Util.TIME_DATE_FORMAT);
             dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
             Date expirationDate = dateFormat.parse(expiration, new ParsePosition(0));
-            BlockData blockData = new BlockData(refBlockNum, refBlockPrefix, expirationDate.getTime());
-
+            BlockData blockData = new BlockData(refBlockNum, refBlockPrefix, expirationDate.getTime() / 1000);
+            // Parsing signatures
+            String signature = null;
+            try {
+                signature = null == jsonObject.get(KEY_SIGNATURES) ? null : jsonObject.get(KEY_SIGNATURES).getAsString();
+            } catch (Exception e) {
+            }
             // Parsing operation list
             BaseOperation operation = null;
             ArrayList<BaseOperation> operationList = new ArrayList<>();
             try {
                 for (JsonElement jsonOperation : jsonObject.get(KEY_OPERATIONS).getAsJsonArray()) {
                     int operationId = jsonOperation.getAsJsonArray().get(0).getAsInt();
-                    if (operationId == OperationType.TRANSFER_OPERATION.ordinal()) {
-                        operation = context.deserialize(jsonOperation, TransferOperation.class);
-                    } else if (operationId == OperationType.LIMIT_ORDER_CREATE_OPERATION.ordinal()) {
-                        operation = context.deserialize(jsonOperation, LimitOrderCreateOperation.class);
+                    Class c = getOperationClass(operationId);
+                    if (c != null) {
+                        operation = context.deserialize(jsonOperation, c);
                     }
-                    if (operation != null)
+                    if (operation != null) {
                         operationList.add(operation);
+                    }
                     operation = null;
                 }
-                return new Transaction(blockData, operationList);
+                return new Transaction(blockData, operationList, signature);
             } catch (Exception e) {
                 LOGGER.info("Exception. Msg: " + e.getMessage());
                 for (StackTraceElement el : e.getStackTrace()) {
                     LOGGER.info(el.getFileName() + "#" + el.getMethodName() + ":" + el.getLineNumber());
                 }
             }
-            return new Transaction(blockData, operationList);
+            return new Transaction(blockData, operationList, signature);
         }
+    }
+
+    private static Class getOperationClass(int operationId) {
+        if (operationId == OperationType.TRANSFER_OPERATION.getCode()) {
+            return TransferOperation.class;
+        } else if (operationId == OperationType.ACCOUNT_CREATE_OPERATION.getCode()) {
+            return AccountCreateOperation.class;
+        }
+        return null;
     }
 }

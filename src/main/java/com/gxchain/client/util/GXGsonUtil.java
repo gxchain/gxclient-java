@@ -2,14 +2,13 @@ package com.gxchain.client.util;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 import com.gxchain.client.graphenej.models.ApiCall;
 import com.gxchain.client.graphenej.models.DynamicGlobalProperties;
 import com.gxchain.client.graphenej.objects.*;
+import com.gxchain.client.graphenej.operations.AccountCreateOperation;
 import com.gxchain.client.graphenej.operations.TransferOperation;
 
 import java.lang.reflect.Type;
-import java.util.List;
 
 /**
  * @author liruobin
@@ -29,6 +28,7 @@ public class GXGsonUtil {
         builder.registerTypeAdapter(Asset.class, new Asset.AssetDeserializer());
         builder.registerTypeAdapter(AccountOptions.class, new AccountOptions.AccountOptionsDeserializer());
         builder.registerTypeAdapter(ApiCall.class, new ApiCall.ApiCallSerializer());
+        builder.registerTypeAdapter(AccountCreateOperation.class, new AccountCreateOperation.AccountCreateDeserializer());
     }
 
     public static Gson getGson() {

@@ -17,13 +17,14 @@ import java.util.List;
 
 /**
  * Class used to represent the weighted set of keys and accounts that must approve operations.
- *
+ * <p>
  * {@see <a href="https://bitshares.org/doxygen/structgraphene_1_1chain_1_1authority.html">Authority</a>}
  */
 public class Authority implements GrapheneSerializable {
     private static final Logger LOGGER = LoggerFactory.getLogger(Authority.class);
     public static final String KEY_ACCOUNT_AUTHS = "account_auths";
     public static final String KEY_KEY_AUTHS = "key_auths";
+    public static final String KEY_ADDRESS_AUTHS = "address_auths";
     public static final String KEY_WEIGHT_THRESHOLD = "weight_threshold";
     public static final String KEY_EXTENSIONS = "extensions";
 
@@ -32,7 +33,7 @@ public class Authority implements GrapheneSerializable {
     private HashMap<PublicKey, Long> key_auths;
     private Extensions extensions;
 
-    public Authority(){
+    public Authority() {
         this.weight_threshold = 1;
         this.account_auths = new HashMap<UserAccount, Long>();
         this.key_auths = new HashMap<PublicKey, Long>();
@@ -41,19 +42,20 @@ public class Authority implements GrapheneSerializable {
 
     /**
      * Constructor for the authority class that takes every possible detail.
+     *
      * @param weight_threshold: The total weight threshold
-     * @param keyAuths: Map of key to weights relationships. Can be null.
-     * @param accountAuths: Map of account to weights relationships. Can be null.
+     * @param keyAuths:         Map of key to weights relationships. Can be null.
+     * @param accountAuths:     Map of account to weights relationships. Can be null.
      * @throws MalformedAddressException
      */
     public Authority(long weight_threshold, HashMap<PublicKey, Long> keyAuths, HashMap<UserAccount, Long> accountAuths) {
         this();
         this.weight_threshold = weight_threshold;
-        if(keyAuths != null)
+        if (keyAuths != null)
             this.key_auths = keyAuths;
         else
             this.key_auths = new HashMap<>();
-        if(accountAuths != null)
+        if (accountAuths != null)
             this.account_auths = accountAuths;
         else
             this.account_auths = new HashMap<>();
@@ -67,24 +69,24 @@ public class Authority implements GrapheneSerializable {
         this.weight_threshold = weight_threshold;
     }
 
-    public void setKeyAuthorities(HashMap<Address, Long> keyAuths){
-        if(keyAuths != null){
-            for(Address address : keyAuths.keySet()){
+    public void setKeyAuthorities(HashMap<Address, Long> keyAuths) {
+        if (keyAuths != null) {
+            for (Address address : keyAuths.keySet()) {
                 key_auths.put(address.getPublicKey(), keyAuths.get(address));
             }
         }
     }
 
-    public void setAccountAuthorities(HashMap<UserAccount, Long> accountAuthorities){
+    public void setAccountAuthorities(HashMap<UserAccount, Long> accountAuthorities) {
         this.account_auths = accountAuthorities;
     }
 
     /**
      * @return: Returns a list of public keys linked to this authority
      */
-    public List<PublicKey> getKeyAuthList(){
+    public List<PublicKey> getKeyAuthList() {
         ArrayList<PublicKey> keys = new ArrayList<>();
-        for(PublicKey pk : key_auths.keySet()){
+        for (PublicKey pk : key_auths.keySet()) {
             keys.add(pk);
         }
         return keys;
@@ -93,19 +95,19 @@ public class Authority implements GrapheneSerializable {
     /**
      * @return: Returns a list of accounts linked to this authority
      */
-    public List<UserAccount> getAccountAuthList(){
+    public List<UserAccount> getAccountAuthList() {
         ArrayList<UserAccount> accounts = new ArrayList<>();
-        for(UserAccount account : account_auths.keySet()){
+        for (UserAccount account : account_auths.keySet()) {
             accounts.add(account);
         }
         return accounts;
     }
 
-    public HashMap<PublicKey, Long> getKeyAuths(){
+    public HashMap<PublicKey, Long> getKeyAuths() {
         return this.key_auths;
     }
 
-    public HashMap<UserAccount, Long> getAccountAuths(){
+    public HashMap<UserAccount, Long> getAccountAuths() {
         return this.account_auths;
     }
 
@@ -120,8 +122,9 @@ public class Authority implements GrapheneSerializable {
         authority.addProperty(KEY_WEIGHT_THRESHOLD, weight_threshold);
         JsonArray keyAuthArray = new JsonArray();
         JsonArray accountAuthArray = new JsonArray();
+        JsonArray addressAuthArray = new JsonArray();
 
-        for(PublicKey publicKey : key_auths.keySet()){
+        for (PublicKey publicKey : key_auths.keySet()) {
             JsonArray subArray = new JsonArray();
             Address address = new Address(publicKey.getKey());
             subArray.add(address.toString());
@@ -129,7 +132,7 @@ public class Authority implements GrapheneSerializable {
             keyAuthArray.add(subArray);
         }
 
-        for(UserAccount key : account_auths.keySet()){
+        for (UserAccount key : account_auths.keySet()) {
             JsonArray subArray = new JsonArray();
             subArray.add(key.toString());
             subArray.add(key_auths.get(key));
@@ -137,6 +140,7 @@ public class Authority implements GrapheneSerializable {
         }
         authority.add(KEY_KEY_AUTHS, keyAuthArray);
         authority.add(KEY_ACCOUNT_AUTHS, accountAuthArray);
+        authority.add(KEY_ADDRESS_AUTHS, addressAuthArray);
         authority.add(KEY_EXTENSIONS, extensions.toJsonObject());
         return authority;
     }
@@ -146,7 +150,7 @@ public class Authority implements GrapheneSerializable {
         List<Byte> byteArray = new ArrayList<Byte>();
         // If the authority is not empty of references, we serialize its contents
         // otherwise its only contribution will be a zero byte
-        if(account_auths.size() + key_auths.size() > 0){
+        if (account_auths.size() + key_auths.size() > 0) {
             // Weight threshold
             byteArray.addAll(Bytes.asList(Util.revertInteger(new Integer((int) weight_threshold))));
 
@@ -155,7 +159,7 @@ public class Authority implements GrapheneSerializable {
 
             //TODO: Check the account authorities serialization
             // Serializing individual accounts and their corresponding weights
-            for(UserAccount account : account_auths.keySet()){
+            for (UserAccount account : account_auths.keySet()) {
                 byteArray.addAll(Bytes.asList(account.toBytes()));
                 byteArray.addAll(Bytes.asList(Util.revertShort(account_auths.get(account).shortValue())));
             }
@@ -164,7 +168,7 @@ public class Authority implements GrapheneSerializable {
             byteArray.add((byte) key_auths.size());
 
             // Serializing individual keys and their corresponding weights
-            for(PublicKey publicKey : key_auths.keySet()){
+            for (PublicKey publicKey : key_auths.keySet()) {
                 byteArray.addAll(Bytes.asList(publicKey.toBytes()));
                 byteArray.addAll(Bytes.asList(Util.revertShort(key_auths.get(publicKey).shortValue())));
             }
@@ -180,9 +184,9 @@ public class Authority implements GrapheneSerializable {
         Authority authority = (Authority) obj;
         HashMap<PublicKey, Long> keyAuths = authority.getKeyAuths();
         HashMap<UserAccount, Long> accountAuths = authority.getAccountAuths();
-        LOGGER.info("key auths match: "+this.key_auths.equals(keyAuths));
-        LOGGER.info("account auths match: "+this.account_auths.equals(accountAuths));
-        LOGGER.info("weight threshold matches: "+(this.weight_threshold == authority.weight_threshold));
+        LOGGER.info("key auths match: " + this.key_auths.equals(keyAuths));
+        LOGGER.info("account auths match: " + this.account_auths.equals(accountAuths));
+        LOGGER.info("weight threshold matches: " + (this.weight_threshold == authority.weight_threshold));
         return this.key_auths.equals(keyAuths) &&
                 this.account_auths.equals(accountAuths) &&
                 this.weight_threshold == authority.weight_threshold;
@@ -190,14 +194,14 @@ public class Authority implements GrapheneSerializable {
 
     /**
      * Custom deserializer used while parsing the 'get_account_by_name' API call response.
-     *
+     * <p>
      * This will deserialize an account authority in the form:
-     *
+     * <p>
      * {
-     *   "weight_threshold": 1,
-     *   "account_auths": [],
-     *   "key_auths": [["BTS6yoiaoC4p23n31AV4GnMy5QDh5yUQEUmU4PmNxRQPGg7jjPkBq",1]],
-     *   "address_auths": []
+     * "weight_threshold": 1,
+     * "account_auths": [],
+     * "key_auths": [["BTS6yoiaoC4p23n31AV4GnMy5QDh5yUQEUmU4PmNxRQPGg7jjPkBq",1]],
+     * "address_auths": []
      * }
      */
     public static class AuthorityDeserializer implements JsonDeserializer<Authority> {
@@ -210,17 +214,17 @@ public class Authority implements GrapheneSerializable {
             JsonArray accountAuthArray = baseObject.getAsJsonArray(KEY_ACCOUNT_AUTHS);
             HashMap<PublicKey, Long> keyAuthMap = new HashMap<>();
             HashMap<UserAccount, Long> accountAuthMap = new HashMap<>();
-            for(int i = 0; i < keyAuthArray.size(); i++){
+            for (int i = 0; i < keyAuthArray.size(); i++) {
                 JsonArray subArray = keyAuthArray.get(i).getAsJsonArray();
                 String addr = subArray.get(0).getAsString();
                 long weight = subArray.get(1).getAsLong();
                 try {
                     keyAuthMap.put(new Address(addr).getPublicKey(), weight);
                 } catch (MalformedAddressException e) {
-                    LOGGER.info("MalformedAddressException. Msg: "+e.getMessage());
+                    LOGGER.info("MalformedAddressException. Msg: " + e.getMessage());
                 }
             }
-            for(int i = 0; i < accountAuthArray.size(); i++){
+            for (int i = 0; i < accountAuthArray.size(); i++) {
                 JsonArray subArray = accountAuthArray.get(i).getAsJsonArray();
                 String userId = subArray.get(0).getAsString();
                 long weight = subArray.get(1).getAsLong();
