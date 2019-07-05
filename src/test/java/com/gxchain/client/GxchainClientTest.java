@@ -24,20 +24,27 @@ import java.util.Arrays;
  */
 @Slf4j
 public class GxchainClientTest {
-    String privateKey = "5K8iH1jMJxn8TKXXgHJHjkf8zGXsbVPvrCLvU2GekDh2nk4ZPSF";
-    String accountId = "1.2.323";
+    // String privateKey = "5K8iH1jMJxn8TKXXgHJHjkf8zGXsbVPvrCLvU2GekDh2nk4ZPSF";
+    // String accountId = "1.2.323";
+
+    String privateKey = "5J8CYVMcMz2f7vDc9fYcySbVUx7f3JnCJJVBeE6eWJmwZToTSqz";
+    String accountId = "1.2.521";
+    String accountName = "liruobin1";
+    String node = "wss://testnet.gxchain.org";
+
     String memoPrivate = privateKey;
     int assetPrecicion = 5;
-    GxchainClient client = new GxchainClient(privateKey, accountId, "ws://192.168.1.118:28090");
+    GxchainClient client = new GxchainClient(privateKey, accountId, node);
+
 
     @Test
     public void generateKey() throws Exception {
         System.out.println(JSON.toJSONString(GxchainClient.generateKey()));
         /**
          *{
-             "brainKey": "plass niche banian hurter spadone ligular fancify hayseed theres proxysm slub chess talisay orillon steam curtail",
-             "privateKey": "5JTHkfd8gH6ebsSjRRJbVhEa7u5vh2YZTJH3qC2osjUM9XxKvKR",
-             "publicKey": "GXC5bgYX7xNDt1YG7DjD178nK6x9phHAHjZJA7Ug3dkeefLsATiCQ"
+         "brainKey": "plass niche banian hurter spadone ligular fancify hayseed theres proxysm slub chess talisay orillon steam curtail",
+         "privateKey": "5JTHkfd8gH6ebsSjRRJbVhEa7u5vh2YZTJH3qC2osjUM9XxKvKR",
+         "publicKey": "GXC5bgYX7xNDt1YG7DjD178nK6x9phHAHjZJA7Ug3dkeefLsATiCQ"
          }
          */
     }
@@ -59,7 +66,7 @@ public class GxchainClientTest {
             //deal with transfer operation
             if (operation.get(0).getAsInt() == 0) {
                 TransferOperation op = WsGsonUtil.fromJson(operation.get(1).toString(), TransferOperation.class);
-                log.info("{},{},{}",blockHeight,txid,op.toJsonString());
+                log.info("{},{},{}", blockHeight, txid, op.toJsonString());
                 /**
                  * eg.
                  * 8973904,fa7d92765dc845e90fd686eb90de4f888f742127,
@@ -91,20 +98,20 @@ public class GxchainClientTest {
 
     @Test
     public void transfer() throws Exception {
-        Transaction transaction = client.transfer("gxb456", "GXChain NB",
-                GxcAssetAmount.builder().amount(new BigDecimal(0.01)).assetId("1.3.1").precision(assetPrecicion).build(), false);
+        Transaction transaction = client.transfer("liruobin2", "GXChain NB",
+                GxcAssetAmount.builder().amount(new BigDecimal(0.01)).assetId("1.3.1").precision(assetPrecicion).build(), true);
         log.info(transaction.toJsonString());
-        log.info("txid:{},fee:{}",transaction.calculateTxid(),((TransferOperation)transaction.getOperations().get(0)).getFee().getAmount().longValue()/ Math.pow(10, assetPrecicion));
+        log.info("txid:{},fee:{}", transaction.calculateTxid(), ((TransferOperation) transaction.getOperations().get(0)).getFee().getAmount().longValue() / Math.pow(10, assetPrecicion));
         // > txid:2f9532ebc9ba12c285a0240f7fcc2ec24d4aa6d2,fee:0.0118
         // Since gxchain implemented dpos consensus, the transaction will be confirmed until the block becomes irreversible
         // You can find the logic when a transfer operation was confirmed in the example of detectTransaction
-        transaction = client.transfer("gxb456", null,
-                GxcAssetAmount.builder().amount(new BigDecimal(0.015)).assetId("1.3.1").precision(assetPrecicion).build(), false);
+     //   transaction = client.transfer("gxb456", null,
+      //          GxcAssetAmount.builder().amount(new BigDecimal(0.015)).assetId("1.3.1").precision(assetPrecicion).build(), false);
         log.info(transaction.toJsonString());
     }
 
     @Test
-    public void proxyTransfer()throws Exception {
+    public void proxyTransfer() throws Exception {
         BroadcastRequestParams requestParams =
                 BroadcastRequestParams.builder().
                         from(new UserAccount(accountId)).
@@ -112,24 +119,24 @@ public class GxchainClientTest {
                         proxyAccount(new UserAccount(accountId)).
                         amount(new AssetAmount(10L, WSConstants.GXS_ASSET_ID)).percentage(1000)
                         .memo("test").
-                        expiration(DateTime.now().plusMinutes(30).getMillis()/1000).
+                        expiration(DateTime.now().plusMinutes(30).getMillis() / 1000).
                         build();
 
-        String sig = SignatureUtil.signature(requestParams.toBytes(),privateKey);//发起方私钥签名
+        String sig = SignatureUtil.signature(requestParams.toBytes(), privateKey);//发起方私钥签名
         requestParams.setSignatures(Arrays.asList(sig));
-        Transaction transaction = client.proxyTransfer("proxy test",WSConstants.GXS_ASSET_ID,requestParams,false);
+        Transaction transaction = client.proxyTransfer("proxy test", WSConstants.GXS_ASSET_ID, requestParams, false);
         log.info(transaction.toJsonString());
     }
 
     @Test
-    public void diyOperation(){
+    public void diyOperation() {
         String data = "Hello GXChain!";
-        log.info(client.diyOperation(data,WSConstants.GXS_ASSET_ID,true).toJsonString());
+        log.info(client.diyOperation(data, WSConstants.GXS_ASSET_ID, true).toJsonString());
     }
 
     @Test
-    public void getObjects(){
-        JsonElement result = client.getObjects(Arrays.asList("1.2.1","2.1.0","1.3.1"));
+    public void getObjects() {
+        JsonElement result = client.getObjects(Arrays.asList("1.2.1", "2.1.0", "1.3.1"));
         log.info(result.toString());
     }
 }
